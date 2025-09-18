@@ -7,3 +7,7 @@
 
 # Netlify
 .netlify
+
+# App
+/node_modules_ts/
+/node_modules_js/
