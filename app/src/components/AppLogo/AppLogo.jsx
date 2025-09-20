@@ -1,4 +1,4 @@
-import dogHouse from '../../images/dog-house.png';
+import dogHouse from '../../../images/dog-house.png';
 
 export default function AppLogo(sx){
 

@@ -11,7 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AppLogo from '../AppLogo/AppLogo';
+import AppLogo from '../../../components/AppLogo/AppLogo';
 import { Stack } from '@mui/material';
 
 const paginas = [
@@ -141,7 +141,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                                     </IconButton>
                                 </Tooltip>
                             ) : (
-                                <Stack direction="Row">
+                                <Stack direction="row">
                                     <Button color="inherit" component="a" href='/MIAUDOTE/cadastro-usuario'>Cadastrar</Button>
                                     <Button color="inherit" onClick={() => setOpenModal(!isOpenModal)}>Login</Button>
                                 </Stack>
