@@ -20,8 +20,6 @@ const style = {
     p: 4,
 };
 
-
-
 export default function Cadastro() {
     const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);

@@ -27,7 +27,7 @@ function PetCard({ id, name, description, image }) {
         <CardActions>
           <Button 
             component={Link} 
-            to={`/MIAUDOTE/pet/${id}`} 
+            to={`/pet/${id}`} 
             size="small"
           >
             Ver Mais
