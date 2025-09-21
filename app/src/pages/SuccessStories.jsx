@@ -1,10 +1,10 @@
 import React from 'react';
 import { Container, Typography, Grid, Box } from '@mui/material';
-import Cao from '../images/cao.jpg';
-import Rex from '../images/rex.jpeg';
-import Luna from '../images/luna.jpeg';
-import Max from '../images/max.webp';
-import Bolt from '../images/bolt.jpg';
+import Cao from '../../images/cao.jpg';
+import Rex from '../../images/rex.jpeg';
+import Luna from '../../images/luna.jpeg';
+import Max from '../../images/max.webp';
+import Bolt from '../../images/bolt.jpg';
 
 function SuccessStories() {
   const stories = [

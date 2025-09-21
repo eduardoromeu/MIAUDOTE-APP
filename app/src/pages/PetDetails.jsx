@@ -23,7 +23,7 @@ import CakeIcon from '@mui/icons-material/Cake';
 import WcIcon from '@mui/icons-material/Wc';
 import StraightenIcon from '@mui/icons-material/Straighten';
 
-import Rufus from '../images/rufus.avif'; // Certifique-se que o caminho para a imagem está correto
+import Rufus from '../../images/rufus.avif'; // Certifique-se que o caminho para a imagem está correto
 
 // 1. DADOS ENRIQUECIDOS - Adicionamos mais detalhes sobre os pets
 const pets = [

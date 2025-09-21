@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Grid, Typography } from '@mui/material'; // Usando Grid do core, é mais comum
 import PetCard from '../components/PetCard/PetCard';
 import LoginModal from '../components/LoginModal/LoginModal';
-import Rufus from '../images/rufus.avif';
+import Rufus from '../../images/rufus.avif';
 
 function Home({ isOpenModal, setOpenModal }) {
   const pets = [

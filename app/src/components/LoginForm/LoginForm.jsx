@@ -2,7 +2,7 @@ import react, { useState } from "react";
 import { FormControl, Typography, Button, Stack, Link, Box } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
 import IconInput from "../IconInput/IconInput";
-import { UserClass } from "../../UserClass";
+import { UserClass } from "../../UserClass.js";
 
 export default function LoginForm() {
     const [login, setLogin] = useState("")

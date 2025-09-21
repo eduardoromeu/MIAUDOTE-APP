@@ -1,6 +1,5 @@
-import AppLogo from "../src/components/AppLogo/AppLogo";
-import PetCard from "../src/components/PetCard/PetCard";
-import petImg from "../images/bolt.jpg";
+import App from "../src/App";
+"use client";
 
 export function Welcome() {
   return (
@@ -8,14 +7,7 @@ export function Welcome() {
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
         <header className="flex flex-col items-center gap-9">
           <div className="w-[500px] max-w-[100vw] p-4">
-            <AppLogo />
-            <PetCard
-              key="test"
-              id="test" // <-- ADICIONADO AQUI
-              name="test"
-              description="test"
-              image={petImg}
-            />
+            <App />
           </div>
         </header>
         <div className="max-w-[300px] w-full space-y-6 px-4">

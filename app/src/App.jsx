@@ -1,25 +1,25 @@
 //AppBar: Uma barra de navegação fixa no topo da página.
 //Drawer: Um menu lateral que abre ao clicar no ícone de menu.
 //Box: Um contêiner que contém as rotas principais e respeita o layout responsivo.
-
+"use client";
+// Packages
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, createBrowserRouter } from 'react-router';
-import { CssBaseline, Box } from '@mui/material';
+import { BrowserRouter as Router, Route, Routes } from 'react-router';
+import { CssBaseline, Box, Container, Typography } from '@mui/material';
+// Images
+import PawPrint from '../images/White_paw_print.png'
+// Pages
 import Home from './pages/Home';
 import Profile from './pages/Profile';
-import NavBar from './components/NavBar/NavBar';
 import RegisterPet from './pages/RegisterPet';
 import SearchPets from './pages/SearchPets';
 import SuccessStories from './pages/SuccessStories';
 import Cadastro from './pages/Cadastro/Cadastro';
-import PawPrint from './images/White_paw_print.png'
-import { Container, Typography } from '@mui/material';
-
-// import './styles.css'; // Importa o CSS global
-import './App.css';
-import { Login } from '@mui/icons-material';
-
 import PetDetails from './pages/PetDetails';
+//Components
+import NavBar from './components/NavBar/NavBar';
+
+import './App.css';
 
 const userModel = {
   logado: false,
@@ -45,17 +45,22 @@ const userModel = {
 function App() {
 
   const LogOut = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if(user){
-      user.logado = false;
-      localStorage.setItem("user", JSON.stringify(user));
+    if (typeof window !== "undefined" && window.localStorage) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if(user){
+        user.logado = false;
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+      window.location.href = "/MIAUDOTE/";
     }
-    window.location.href = "/MIAUDOTE/";
     return (<></>);
   }
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  const [isOpenModal, setOpenModal] = useState((user === null || user === undefined) ? true : !user.logado ?? true);
+  let user = null;
+  if (typeof window !== "undefined" && window.localStorage) {
+    user = JSON.parse(localStorage.getItem("user"));
+  }
+  const [isOpenModal, setOpenModal] = useState((user === null || user === undefined) ? true : !user?.logado ?? true);
 
   return (
     <Router basename='/'>
@@ -90,63 +95,5 @@ export default App;
 
 
 /*
-
 // https://www.svgrepo.com/collection/pet-hotel/
-import { red } from '@mui/material/colors';
-
-import { createTheme } from '@mui/material';
-import './App.css';
-import Header from './components/Header/Header';
-import { ThemeProvider } from 'styled-components';
-import Cadastro from './pages/Cadastro/Cadastro';
-import { colors } from '@mui/material';
-import FormPropsTextFields from './components/Formulario/formulario';
-
-//up 1
-jsx
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import RegisterPet from './pages/RegisterPet';
-import SearchPets from './pages/SearchPets';
-import SuccessStories from './pages/SuccessStories';
-import Navbar from './components/Navbar';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: red[500],
-    },
-  },
-});
-
-
-//up 1
-function App() {
-  return (
-    <Router>
-      <div className="App">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/register-pet" element={<RegisterPet />} />
-          <Route path="/search-pets" element={<SearchPets />} />
-          <Route path="/success-stories" element={<SuccessStories />} />
-        </Routes>
-      </div>
-    </Router>
-  );
-}
-    
-    /*
-    <ThemeProvider theme={theme}>
-      <div className="App">
-        <Header titulo="MIAUDOT"></Header>
-        <Cadastro />
-      </div>
-    </ThemeProvider>
-  );
-}
 */
