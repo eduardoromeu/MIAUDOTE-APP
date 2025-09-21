@@ -24,7 +24,7 @@ export const links = () => [
 ];
 
 //miaudote
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PawPrint from "./images/White_paw_print.png";
 import NavBar from "./src/components/NavBar/NavBar";
 const userModel = {
@@ -66,7 +66,16 @@ export function Layout({ children }) {
     if (typeof window !== "undefined" && window.localStorage) {
       user = JSON.parse(localStorage.getItem("user"));
     }
-    const [isOpenModal, setOpenModal] = useState((user === null || user === undefined) ? true : !user?.logado ?? true);
+    const [isOpenModal, setOpenModal] = useState(false);
+
+    // Synchronize modal state after mount to avoid hydration mismatch
+    useEffect(() => {
+      let user = null;
+      if (typeof window !== "undefined" && window.localStorage) {
+        user = JSON.parse(localStorage.getItem("user"));
+      }
+      setOpenModal(!user || !user.logado);
+    }, []);
 
   return (
     <html lang="pt-br">
