@@ -1,3 +1,4 @@
+"use client";
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -15,14 +16,14 @@ import AppLogo from '../AppLogo/AppLogo';
 import { Stack } from '@mui/material';
 
 const paginas = [
-    {label:"Cadastrar Pet", href:"/MIAUDOTE/register-pet", requireLogin:true},
-    {label:"Buscar Pets", href:"/MIAUDOTE/search-pets", requireLogin:false},
-    {label:"Adoções Concluídas", href:"/MIAUDOTE/success-stories", requireLogin:false},
+    {label:"Cadastrar Pet", href:"/register-pet", requireLogin:true},
+    {label:"Buscar Pets", href:"/search-pets", requireLogin:false},
+    {label:"Adoções Concluídas", href:"/success-stories", requireLogin:false},
 ];
 
 const configs = [
-    {label:"Perfil", href:"/MIAUDOTE/profile"},
-    {label:"Sair", href:"/MIAUDOTE/logout"},
+    {label:"Perfil", href:"/profile"},
+    {label:"Sair", href:"/logout"},
 ];
 
 export default function NavBar({isOpenModal, setOpenModal}) {
@@ -44,7 +45,10 @@ export default function NavBar({isOpenModal, setOpenModal}) {
         setAnchorElUser(null);
     };
 
-    const user = JSON.parse(localStorage.getItem("user"));
+    let user = null;
+    if (typeof window !== "undefined" && window.localStorage) {
+      user = JSON.parse(localStorage.getItem("user"));
+    }
 
     return (
         <AppBar position="fixed">
@@ -56,7 +60,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                         aria-label="menu"
                         sx={{ display: { xs: 'none', md: 'inline-flex' } }}
                         component="a"
-                        href="/MIAUDOTE/"
+                        href="/"
                     >
                         <AppLogo />
                         <Typography variant='h5' sx={{ fontFamily: 'monospace', marginBottom: '-5px', marginLeft: '.25em' }}>MIAUDOTE</Typography>
@@ -110,7 +114,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                         color="inherit"
                         aria-label="menu"
                         component="a"
-                        href="/MIAUDOTE/"
+                        href="/"
                         disableRipple
                         sx={{ display: { xs: 'flex', md: 'none' }, flexGrow: 1 }}
                     >
@@ -142,7 +146,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                                 </Tooltip>
                             ) : (
                                 <Stack direction="row">
-                                    <Button color="inherit" component="a" href='/MIAUDOTE/cadastro-usuario'>Cadastrar</Button>
+                                    <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar</Button>
                                     <Button color="inherit" onClick={() => setOpenModal(!isOpenModal)}>Login</Button>
                                 </Stack>
                             )

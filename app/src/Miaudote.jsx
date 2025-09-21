@@ -42,7 +42,7 @@ const userModel = {
   ]
 };
 
-function App() {
+function Miaudote() {
 
   const LogOut = () => {
     if (typeof window !== "undefined" && window.localStorage) {
@@ -91,7 +91,8 @@ function App() {
   );
 }
 
-export default App;
+
+export default Miaudote;
 
 
 /*

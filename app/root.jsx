@@ -1,3 +1,4 @@
+"use client";
 import {
   isRouteErrorResponse,
   Links,
@@ -22,9 +23,53 @@ export const links = () => [
   },
 ];
 
+//miaudote
+import { useState } from "react";
+import PawPrint from "./images/White_paw_print.png";
+import NavBar from "./src/components/NavBar/NavBar";
+const userModel = {
+  logado: false,
+  password:"123",
+  name: "Thiago Frango",
+  phone: "+55 11 99999-9999",
+  email: "email@example.com",
+  avatar: PawPrint, // Link da imagem do avatar
+  favorites: [
+    {
+      name: "Luna",
+      description: "Uma gata branca muito carinhosa.",
+      image: "https://example.com/luna.jpg",
+    },
+    {
+      name: "Rex",
+      description: "Cachorro labrador enérgico.",
+      image: "https://example.com/rex.jpg",
+    },
+  ]
+};
+
 export function Layout({ children }) {
+
+    const LogOut = () => {
+      if (typeof window !== "undefined" && window.localStorage) {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if(user){
+          user.logado = false;
+          localStorage.setItem("user", JSON.stringify(user));
+        }
+        window.location.href = "/MIAUDOTE/";
+      }
+      return (<></>);
+    }
+  
+    let user = null;
+    if (typeof window !== "undefined" && window.localStorage) {
+      user = JSON.parse(localStorage.getItem("user"));
+    }
+    const [isOpenModal, setOpenModal] = useState((user === null || user === undefined) ? true : !user?.logado ?? true);
+
   return (
-    <html lang="en">
+    <html lang="pt-br">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32,6 +77,7 @@ export function Layout({ children }) {
         <Links />
       </head>
       <body>
+        <NavBar isOpenModal={isOpenModal} setOpenModal={setOpenModal} />
         {children}
         <ScrollRestoration />
         <Scripts />
