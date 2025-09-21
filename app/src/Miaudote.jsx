@@ -14,12 +14,10 @@ import Profile from './pages/Profile';
 import RegisterPet from './pages/RegisterPet';
 import SearchPets from './pages/SearchPets';
 import SuccessStories from './pages/SuccessStories';
-import Cadastro from './pages/Cadastro/Cadastro';
+import Cadastro from './pages/Cadastro';
 import PetDetails from './pages/PetDetails';
 //Components
 import NavBar from './components/NavBar/NavBar';
-
-import './App.css';
 
 const userModel = {
   logado: false,

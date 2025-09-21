@@ -24,6 +24,7 @@ export const links = () => [
 ];
 
 //miaudote
+import { Container, Typography, CssBaseline, Box } from "@mui/material";
 import { useState, useEffect } from "react";
 import PawPrint from "./images/White_paw_print.png";
 import NavBar from "./src/components/NavBar/NavBar";
@@ -87,7 +88,10 @@ export function Layout({ children }) {
       </head>
       <body>
         <NavBar isOpenModal={isOpenModal} setOpenModal={setOpenModal} />
-        {children}
+        <CssBaseline />
+        <Box component="main" sx={{ p: 3, mt: 8 }}>
+          {children}
+        </Box>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -116,14 +120,17 @@ export function ErrorBoundary({ error }) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <Container>
+      <Typography variant='h2'>404 - Página não encontrada</Typography>
+        <main className="pt-16 p-4 container mx-auto">
+          <h1>{message}</h1>
+          <p>{details}</p>
+          {stack && (
+            <pre className="w-full p-4 overflow-x-auto">
+              <code>{stack}</code>
+            </pre>
+          )}
+        </main>
+      </Container>
   );
 }
