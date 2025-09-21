@@ -9,23 +9,23 @@ export default function LoginForm() {
     const [password, setPassword] = useState("")
     
     function Logar() {
-        const user = JSON.parse(localStorage.getItem("user"));
-        console.log(user);
-        console.log(`login: ${login}, password: ${password}`);
+        // const user = JSON.parse(localStorage.getItem("user"));
+        // console.log(user);
+        // console.log(`login: ${login}, password: ${password}`);
 
-        if(!user){
-            alert("Usuário ou senha incorretos, tente novamente!");
-            return;
-        }
+        // if(!user){
+        //     alert("Usuário ou senha incorretos, tente novamente!");
+        //     return;
+        // }
 
-        if((login === user.name || login === user.email || login === user.phone) && user.password === password){
-            user.logado = true;
-            UserClass.SaveUser(user);
-            window.location.href = "/MIAUDOTE/";
-            console.log(user);
-        } else {
-            alert("Usuário ou senha incorretos, tente novamente!");
-        }
+        // if((login === user.name || login === user.email || login === user.phone) && user.password === password){
+        //     user.logado = true;
+        //     UserClass.SaveUser(user);
+        //     window.location.href = "/MIAUDOTE/";
+        //     console.log(user);
+        // } else {
+        //     alert("Usuário ou senha incorretos, tente novamente!");
+        // }
     }
 
     return (

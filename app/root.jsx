@@ -49,34 +49,20 @@ const userModel = {
   ]
 };
 
-export function Layout({ children }) {
+// Synchronize modal state after mount to avoid hydration mismatch
+let user = null;
+if (typeof window !== "undefined" && window.localStorage) {
+  user = JSON.parse(localStorage.getItem("user"));
+}
 
-    const LogOut = () => {
-      if (typeof window !== "undefined" && window.localStorage) {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if(user){
-          user.logado = false;
-          localStorage.setItem("user", JSON.stringify(user));
-        }
-        window.location.href = "/MIAUDOTE/";
-      }
-      return (<></>);
-    }
+if (typeof window !== "undefined" && window.localStorage) {
+  user = JSON.parse(localStorage.getItem("user"));
+}
+
+export function Layout({ children }) {  
   
-    let user = null;
-    if (typeof window !== "undefined" && window.localStorage) {
-      user = JSON.parse(localStorage.getItem("user"));
-    }
-    const [isOpenModal, setOpenModal] = useState(false);
-
-    // Synchronize modal state after mount to avoid hydration mismatch
-    useEffect(() => {
-      let user = null;
-      if (typeof window !== "undefined" && window.localStorage) {
-        user = JSON.parse(localStorage.getItem("user"));
-      }
-      setOpenModal(!user || !user.logado);
-    }, []);
+  const [isOpenModal, setOpenModal] = useState(false);
+  console.log("Is modal open = " + isOpenModal);
 
   return (
     <html lang="pt-br">

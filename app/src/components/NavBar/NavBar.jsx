@@ -97,7 +97,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                         >
                             {paginas.map(({label, href, requireLogin}, index) => (
                                 (requireLogin && !(user && user.logado)) ? <></> :
-                                <MenuItem key={index} onClick={handleCloseNavMenu}>
+                                <MenuItem key={href} onClick={handleCloseNavMenu}>
                                     <Button
                                         sx={{ textAlign: 'center' }}
                                         component="a"
@@ -128,7 +128,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                         {paginas.map(({label, href, requireLogin}, index) => (
                             (requireLogin && !(user && user.logado)) ? <></> :
                             <Button
-                                key={index}
+                                key={href}
                                 onClick={handleCloseNavMenu}
                                 sx={{ my: 2, color: 'white', display: 'block', paddingTop: '12px' }}
                                 component="a"
@@ -171,7 +171,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                             onClose={handleCloseUserMenu}
                         >
                             {configs.map(({label, href}, index) => (
-                                <MenuItem key={index} onClick={handleCloseUserMenu}>
+                                <MenuItem key={href} onClick={handleCloseUserMenu}>
                                     <Typography
                                         sx={{ textAlign: 'center', textDecoration: 'none' }}
                                         component="a"
