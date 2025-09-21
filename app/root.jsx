@@ -28,9 +28,10 @@ import { Container, Typography, CssBaseline, Box } from "@mui/material";
 import { useState, useEffect } from "react";
 import PawPrint from "./images/White_paw_print.png";
 import NavBar from "./src/components/NavBar/NavBar";
+import LoginModal from "./src/components/LoginModal/LoginModal";
 const userModel = {
   logado: false,
-  password:"123",
+  password: "123",
   name: "Thiago Frango",
   phone: "+55 11 99999-9999",
   email: "email@example.com",
@@ -59,10 +60,10 @@ if (typeof window !== "undefined" && window.localStorage) {
   user = JSON.parse(localStorage.getItem("user"));
 }
 
-export function Layout({ children }) {  
-  
+export function Layout({ children }) {
+
   const [isOpenModal, setOpenModal] = useState(false);
-  console.log("Is modal open = " + isOpenModal);
+  console.log("isMoalOpen = " + isOpenModal, "setModalOpen = " + setOpenModal);
 
   return (
     <html lang="pt-br">
@@ -78,6 +79,10 @@ export function Layout({ children }) {
         <Box component="main" sx={{ p: 3, mt: 8 }}>
           {children}
         </Box>
+        {/* <LoginModal testString="ÄAAAAAAAAAAAA" open={isOpenModal} onClose={() => {
+          setOpenModal(false);
+          console.log(isOpenModal);
+        }} /> */}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -108,15 +113,15 @@ export function ErrorBoundary({ error }) {
   return (
     <Container>
       <Typography variant='h2'>404 - Página não encontrada</Typography>
-        <main className="pt-16 p-4 container mx-auto">
-          <h1>{message}</h1>
-          <p>{details}</p>
-          {stack && (
-            <pre className="w-full p-4 overflow-x-auto">
-              <code>{stack}</code>
-            </pre>
-          )}
-        </main>
-      </Container>
+      <main className="pt-16 p-4 container mx-auto">
+        <h1>{message}</h1>
+        <p>{details}</p>
+        {stack && (
+          <pre className="w-full p-4 overflow-x-auto">
+            <code>{stack}</code>
+          </pre>
+        )}
+      </main>
+    </Container>
   );
 }

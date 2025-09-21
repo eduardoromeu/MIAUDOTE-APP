@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Container, Stack, TextField, Button, Typography, Box } from "@mui/material";
+import LoginModal from '../components/LoginModal/LoginModal';
+import LoginForm from '../components/LoginForm/LoginForm';
 
 export default function Login() {
     // 1. Hooks para gerenciar o estado e a navegação
@@ -40,6 +42,12 @@ export default function Login() {
             setError("Email ou senha inválidos. Tente novamente.");
         }
     };
+
+    return (
+      <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <LoginForm />
+      </Box>
+    )
 
     return (
         <Container maxWidth="xs">

@@ -1,10 +1,9 @@
 import React from 'react';
 import { Container, Grid, Typography } from '@mui/material'; // Usando Grid do core, é mais comum
 import PetCard from '../components/PetCard/PetCard';
-import LoginModal from '../components/LoginModal/LoginModal';
 import Rufus from '../../images/rufus.avif';
 
-function Home({ isOpenModal, setOpenModal }) {
+function Home() {
   const pets = [
     { id: 1, name: 'Fofinho', description: 'Gato muito carinhoso!', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKy5Zq3nDNcIKQEtTvd1iJTSzxQk4UO53QrA&s' },
     { id: 2, name: 'Rex', description: 'Cachorro brincalhão e esperto.', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTekrqEm8Pps8NR1x2kRA2N2WTL23Q9R9nVbw&s' },
@@ -29,8 +28,6 @@ function Home({ isOpenModal, setOpenModal }) {
           />
         ))}
       </Grid>
-
-      <LoginModal open={isOpenModal} onClose={() => setOpenModal(!isOpenModal)} />
     </Container>
   );
 }

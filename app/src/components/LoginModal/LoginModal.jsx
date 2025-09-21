@@ -8,13 +8,15 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+
   bgcolor: 'background.paper',
   p: 4,
   borderRadius: "10px"
 };
 
-export default function LoginModal({open, onClose}) {
+export default function LoginModal({testString, open, onClose}) {
+  console.log(testString);
+  console.log("ModalOpen = " + open, "Modal OnClose = " + onClose);
   return (
       <Modal
         open={open}
@@ -23,7 +25,7 @@ export default function LoginModal({open, onClose}) {
         aria-describedby="modal-login-form"
         sx={{border:'none'}}
       >
-        <Box sx={style}>
+        <Box sx={style} component="div">
           <LoginForm />
         </Box>
       </Modal>

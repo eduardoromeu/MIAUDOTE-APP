@@ -96,7 +96,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                             sx={{ display: { xs: 'block', md: 'none' } }}
                         >
                             {paginas.map(({label, href, requireLogin}, index) => (
-                                (requireLogin && !(user && user.logado)) ? <></> :
+                                (requireLogin && !(user && user.logado)) ? null :
                                 <MenuItem key={href} onClick={handleCloseNavMenu}>
                                     <Button
                                         sx={{ textAlign: 'center' }}
@@ -126,7 +126,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
 
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         {paginas.map(({label, href, requireLogin}, index) => (
-                            (requireLogin && !(user && user.logado)) ? <></> :
+                            (requireLogin && !(user && user.logado)) ? null :
                             <Button
                                 key={href}
                                 onClick={handleCloseNavMenu}
@@ -149,7 +149,7 @@ export default function NavBar({isOpenModal, setOpenModal}) {
                             ) : (
                                 <Stack direction="row">
                                     <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar</Button>
-                                    <Button color="inherit" onClick={() => setOpenModal(!isOpenModal)}>Login</Button>
+                                    <Button color="inherit" component="a" href='/login'>Login</Button>
                                 </Stack>
                             )
                         }

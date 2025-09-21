@@ -7,6 +7,6 @@ export default [
   route("/success-stories", "src/pages/SuccessStories.jsx"),
   route("/pet/:petId", "src/pages/PetDetails.jsx"),
   route("/cadastro-usuario", "src/pages/Cadastro.jsx"),
-  route("/login", "src/components/LoginModal/LoginModal.jsx"),
+  route("/login", "src/pages/Login.jsx"),
   route("/logout", "src/pages/LogOut.jsx"),
 ];
