@@ -1,6 +1,6 @@
-import logoDark from "./logo-dark.svg";
-import logoLight from "./logo-light.svg";
 import AppLogo from "../src/components/AppLogo/AppLogo";
+import PetCard from "../src/components/PetCard/PetCard";
+import petImg from "../images/bolt.jpg";
 
 export function Welcome() {
   return (
@@ -9,6 +9,13 @@ export function Welcome() {
         <header className="flex flex-col items-center gap-9">
           <div className="w-[500px] max-w-[100vw] p-4">
             <AppLogo />
+            <PetCard
+              key="test"
+              id="test" // <-- ADICIONADO AQUI
+              name="test"
+              description="test"
+              image={petImg}
+            />
           </div>
         </header>
         <div className="max-w-[300px] w-full space-y-6 px-4">
@@ -78,7 +85,7 @@ const resources = [
       </svg>
     ),
   },
-    {
+  {
     href: "https://eduardoromeu.github.io/MIAUDOTE/",
     text: "MIAUDOTE",
     icon: (

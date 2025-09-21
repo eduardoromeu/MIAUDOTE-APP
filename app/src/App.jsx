@@ -3,7 +3,7 @@
 //Box: Um contêiner que contém as rotas principais e respeita o layout responsivo.
 
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, createBrowserRouter } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, createBrowserRouter } from 'react-router';
 import { CssBaseline, Box } from '@mui/material';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
@@ -105,7 +105,7 @@ import FormPropsTextFields from './components/Formulario/formulario';
 //up 1
 jsx
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import RegisterPet from './pages/RegisterPet';

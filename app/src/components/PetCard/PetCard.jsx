@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, CardActions, Grid } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link } from "react-router";
 
 // REMOVA a linha "import Rufus from '../images/rufus.avif';" se ela existir aqui.
 // Este componente não precisa saber de onde a imagem vem.
