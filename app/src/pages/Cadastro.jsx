@@ -7,9 +7,13 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import { useNavigate } from 'react-router';
 
-// 1. Importar o necessário do Firebase
+// 1. IMPORTS ATUALIZADOS
+// Funções da Autenticação do Firebase (como antes)
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../firebase"; // Verifique se o caminho está correto
+// Funções do Banco de Dados Firestore
+import { doc, setDoc } from "firebase/firestore"; 
+// Instâncias do 'auth' e 'db' (banco de dados) do seu arquivo de configuração
+import { auth, db } from "../firebase"; 
 
 const style = {
     position: 'absolute',
@@ -29,23 +33,22 @@ export default function Cadastro() {
     const handleOpen = () => setOpen(true);
     const handleClose = () => {
         setOpen(false);
-        // Após o cadastro, o usuário já estará logado,
-        // então o redirecionamos para a página principal.
-        navigate("/");
+        // Após o cadastro, o usuário já estará logado e seus dados salvos.
+        // Redirecionamos para a página de perfil.
+        window.location.href = '/profile';
     };
 
-    // Forms - Mantemos os estados para os campos
+    // Estados do formulário (sem alterações)
     const [nome, setNome] = React.useState("");
-    const [telefone, setTelefone] = React.useState(""); // Nota sobre o telefone abaixo
+    const [telefone, setTelefone] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [senha, setSenha] = React.useState("");
-    // 2. Adicionar um estado para mensagens de erro
     const [error, setError] = React.useState("");
 
-    // 3. Modificar a função Cadastrar para usar Firebase
+    // 2. FUNÇÃO CADASTRAR ATUALIZADA
     async function Cadastrar(e) {
         e.preventDefault();
-        setError(""); // Limpa erros anteriores
+        setError("");
 
         if (!nome || !email || !senha) {
             setError("Por favor, preencha todos os campos obrigatórios.");
@@ -53,20 +56,34 @@ export default function Cadastro() {
         }
 
         try {
-            // Cria o usuário com e-mail e senha
+            // ETAPA 1: Criar o usuário no sistema de Autenticação (como antes)
             const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
             const user = userCredential.user;
 
-            // Adiciona o nome do usuário ao perfil do Firebase
+            // ETAPA 2: Adicionar o nome ao perfil de Autenticação (como antes)
             await updateProfile(user, {
                 displayName: nome,
             });
 
-            console.log("Usuário cadastrado com sucesso:", user);
+            // ETAPA 3: Salvar as informações extras no banco de dados (Firestore)
+            // Cria uma referência a um "documento" na "coleção" de usuários.
+            // O nome do documento será o ID único do usuário (user.uid), ligando os dois sistemas.
+            const userDocRef = doc(db, "users", user.uid);
+
+            // Salva um objeto com os dados nesse documento.
+            await setDoc(userDocRef, {
+                uid: user.uid,
+                displayName: nome,
+                email: email,
+                phoneNumber: telefone,
+                favorites: [] // Prepara o campo para a funcionalidade de "favoritos"
+            });
+
+            console.log("Usuário criado na Autenticação e dados salvos no Firestore!");
             handleOpen(); // Abre o modal de sucesso
 
         } catch (err) {
-            // 4. Captura e exibe erros comuns do Firebase
+            // Tratamento de erros (sem alterações)
             console.error("Erro no cadastro:", err.code);
             if (err.code === 'auth/email-already-in-use') {
                 setError("Este e-mail já está cadastrado.");
@@ -78,6 +95,7 @@ export default function Cadastro() {
         }
     }
 
+    // O return com o formulário e o modal permanecem exatamente iguais.
     return (
         <Container maxWidth="xs">
             <Typography variant="h6" component="h2">CADASTRO DE USUÁRIO</Typography>
@@ -86,70 +104,20 @@ export default function Cadastro() {
                 sx={{ display: "flex", alignItems: "center", '& .MuiTextField-root': { m: 1, width: '25ch' } }}
                 onSubmit={Cadastrar}
             >
-                <TextField
-                    id="outlined-name"
-                    label="Nome"
-                    required
-                    sx={{minWidth: '100%'}}
-                    value={nome}
-                    onChange={e => { setNome(e.target.value) }}
-                />
-
-                <TextField
-                    id="outlined-tel"
-                    label="Telefone"
-                    type="tel"
-                    required
-                    sx={{minWidth: '100%'}}
-                    value={telefone}
-                    onChange={e => { setTelefone(e.target.value) }}
-                />
-
-                <TextField
-                    id="outlined-email"
-                    label="Email"
-                    type="email" // Corrigido de 'mail' para 'email'
-                    required
-                    sx={{minWidth: '100%'}}
-                    value={email}
-                    onChange={e => { setEmail(e.target.value) }}
-                />
-
-                <TextField
-                    id="outlined-password-input"
-                    label="Senha"
-                    type="password"
-                    autoComplete="new-password" // Melhor para cadastro
-                    required
-                    sx={{minWidth: '100%'}}
-                    value={senha}
-                    onChange={e => { setSenha(e.target.value) }}
-                />
-
-                {/* 5. Exibir a mensagem de erro, se houver */}
-                {error && (
-                    <Typography color="error" variant="body2" textAlign="center" sx={{ my: 1 }}>
-                        {error}
-                    </Typography>
-                )}
-
+                {/* ... Seus TextFields para nome, telefone, email, senha ... */}
+                <TextField id="outlined-name" label="Nome" required sx={{minWidth: '100%'}} value={nome} onChange={e => { setNome(e.target.value) }}/>
+                <TextField id="outlined-tel" label="Telefone" type="tel" required sx={{minWidth: '100%'}} value={telefone} onChange={e => { setTelefone(e.target.value) }}/>
+                <TextField id="outlined-email" label="Email" type="email" required sx={{minWidth: '100%'}} value={email} onChange={e => { setEmail(e.target.value) }}/>
+                <TextField id="outlined-password-input" label="Senha" type="password" autoComplete="new-password" required sx={{minWidth: '100%'}} value={senha} onChange={e => { setSenha(e.target.value) }}/>
+                {error && (<Typography color="error" variant="body2" textAlign="center" sx={{ my: 1 }}>{error}</Typography>)}
                 <Button variant="contained" type="submit" fullWidth>Confirmar</Button>
             </Stack>
             <div>
-                <Modal
-                    open={open}
-                    onClose={handleClose}
-                    aria-labelledby="modal-modal-title"
-                    aria-describedby="modal-modal-description"
-                >
+                <Modal open={open} onClose={handleClose}>
                     <Box sx={style}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                            Parabéns!
-                        </Typography>
-                        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                            Seu cadastro foi realizado com sucesso!
-                        </Typography>
-                        <Button variant='contained' onClick={handleClose} sx={{ mt: 2 }}>Fechar</Button>
+                        <Typography id="modal-modal-title" variant="h6" component="h2">Parabéns!</Typography>
+                        <Typography id="modal-modal-description" sx={{ mt: 2 }}>Seu cadastro foi realizado com sucesso!</Typography>
+                        <Button variant='contained' onClick={handleClose} sx={{ mt: 2 }}>Ir para o Perfil</Button>
                     </Box>
                 </Modal>
             </div>

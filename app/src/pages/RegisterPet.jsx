@@ -1,120 +1,98 @@
+// app/src/pages/RegisterPet.jsx
+
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, Modal, } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { Container, Typography, Stack, TextField, Button, Box, Modal, CircularProgress } from '@mui/material';
+import { useOutletContext, useNavigate } from 'react-router';
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
+// Imports do Firebase para adicionar dados
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from '../firebase'; // Verifique o caminho
 
-const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
+const style = { /* ... seu estilo do modal ... */ };
 
+export default function RegisterPet() {
+    const { user } = useOutletContext(); // Pega o usuário logado
+    const navigate = useNavigate();
 
-function RegisterPet() {
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const [petName, setPetName] = useState('');
-  const [description, setDescription] = useState('');
+    const [petName, setPetName] = useState('');
+    const [description, setDescription] = useState('');
+    const [age, setAge] = useState('');
+    const [breed, setBreed] = useState('');
+    // Adicione mais 'useState' para outros campos se precisar (gênero, porte, etc.)
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Função para registrar o pet
-    console.log({ petName, description });
-  };
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
 
-  return (
-    <Container>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Cadastrar Pet
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Nome do Pet"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={petName}
-          onChange={(e) => setPetName(e.target.value)}
-        />
-        <TextField
-          label="Idade"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <TextField
-          label="Raça"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <TextField
-          label="Diga mais sobre o pet"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <div>
-          <Button onClick={handleOpen} variant="contained">Cadastrar</Button>
-          <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={style}>
-              <Typography id="modal-modal-title" variant="h6" component="h2">
-                Parabens!
-              </Typography>
-              <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                O pet foi cadastrado com sucesso!
-              </Typography>
-            </Box>
-          </Modal>
-        </div>
-      </form>
-      <Button
-        sx={{alignItems: 'baseline', marginTop:'30px'} }
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        startIcon={<CloudUploadIcon />}
-      >
-        Enviar Imagens
-        <VisuallyHiddenInput
-          type="file"
-          onChange={(event) => console.log(event.target.files)}
-          multiple
-        />
-      </Button>
-    </Container>
-  );
+    const handleRegisterPet = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        if (!petName || !description || !age || !breed) {
+            setError('Por favor, preencha todos os campos.');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // Cria uma referência para a coleção 'pets'
+            const petsCollectionRef = collection(db, "pets");
+
+            // Adiciona um novo documento (um novo pet) à coleção
+            await addDoc(petsCollectionRef, {
+                name: petName,
+                description: description,
+                age: age,
+                breed: breed,
+                ownerId: user.uid, // Associa o pet ao usuário logado
+                ownerName: user.displayName,
+                createdAt: serverTimestamp(), // Adiciona a data de criação
+                // Futuramente, aqui você adicionará a URL da imagem
+                imageUrl: 'https://via.placeholder.com/400' 
+            });
+
+            console.log("Pet cadastrado com sucesso!");
+            setLoading(false);
+            setOpenModal(true); // Abre o modal de sucesso
+
+        } catch (err) {
+            console.error("Erro ao cadastrar o pet: ", err);
+            setError('Ocorreu um erro. Tente novamente.');
+            setLoading(false);
+        }
+    };
+    
+    const handleCloseModal = () => {
+        setOpenModal(false);
+        navigate('/search-pets'); // Redireciona para a página de busca após o sucesso
+    };
+
+    return (
+        <Container maxWidth="sm">
+            <Typography variant="h4" component="h1" gutterBottom>
+                Cadastrar um Novo Pet
+            </Typography>
+            <Stack component="form" onSubmit={handleRegisterPet} spacing={2}>
+                <TextField label="Nome do Pet" value={petName} onChange={e => setPetName(e.target.value)} required />
+                <TextField label="Descrição" value={description} onChange={e => setDescription(e.target.value)} multiline rows={4} required />
+                <TextField label="Idade" value={age} onChange={e => setAge(e.target.value)} required />
+                <TextField label="Raça" value={breed} onChange={e => setBreed(e.target.value)} required />
+                
+                {error && <Typography color="error">{error}</Typography>}
+
+                <Button type="submit" variant="contained" size="large" disabled={loading}>
+                    {loading ? <CircularProgress size={24} /> : 'Cadastrar Pet'}
+                </Button>
+            </Stack>
+
+            <Modal open={openModal} onClose={handleCloseModal}>
+                <Box sx={style}>
+                    <Typography variant="h6">Sucesso!</Typography>
+                    <Typography sx={{ mt: 2 }}>O pet foi cadastrado e já está disponível para adoção.</Typography>
+                    <Button onClick={handleCloseModal} sx={{ mt: 2 }}>Ver Pets</Button>
+                </Box>
+            </Modal>
+        </Container>
+    );
 }
-
-export default RegisterPet;

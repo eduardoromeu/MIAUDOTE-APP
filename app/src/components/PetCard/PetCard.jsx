@@ -1,41 +1,44 @@
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Button, CardActions, Grid } from '@mui/material';
-import { Link } from "react-router";
+import { Card, CardContent, CardMedia, Typography, Button, CardActions } from '@mui/material';
 
-// REMOVA a linha "import Rufus from '../images/rufus.avif';" se ela existir aqui.
-// Este componente não precisa saber de onde a imagem vem.
-// Ele apenas recebe a prop "image" e a exibe.
+// 1. O componente agora recebe uma única prop: 'petData'
+export default function PetCard({ petData }) {
+  
+  // 2. Verificação para o caso de dados incompletos
+  if (!petData) {
+    return null; // Não renderiza nada se não houver dados
+  }
 
-function PetCard({ id, name, description, image }) {
   return (
-    <Grid item xs={12} sm={6} md={4}>
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <CardMedia
-          component="img"
-          height="140"
-          image={image} // <-- Ele já recebe a imagem pronta (seja uma URL ou a variável importada)
-          alt={name}
-        />
-        <CardContent sx={{ flexGrow: 1 }}>
-          <Typography gutterBottom variant="h5" component="div">
-            {name}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {description}
-          </Typography>
-        </CardContent>
-        <CardActions>
-          <Button 
-            component={Link} 
-            to={`/pet/${id}`} 
-            size="small"
-          >
-            Ver Mais
-          </Button>
-        </CardActions>
-      </Card>
-    </Grid>
+    // O Grid item foi removido daqui e deve ficar na página SearchPets,
+    // tornando este componente mais reutilizável.
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardMedia
+        component="img"
+        height="140"
+        // 3. Usa os campos do objeto petData
+        image={petData.imageUrl} 
+        alt={petData.name}
+      />
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Typography gutterBottom variant="h5" component="div">
+          {petData.name}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {/* Mostra os primeiros 100 caracteres da descrição */}
+          {petData.description ? `${petData.description.substring(0, 100)}...` : 'Nenhuma descrição disponível.'}
+        </Typography>
+      </CardContent>
+      <CardActions>
+        <Button 
+          // 4. Usa um link 'a' padrão para máxima compatibilidade
+          component="a" 
+          href={`/pet/${petData.id}`} 
+          size="small"
+        >
+          Ver Mais
+        </Button>
+      </CardActions>
+    </Card>
   );
 }
-
-export default PetCard;
