@@ -11,9 +11,9 @@ const firebaseConfig = {
   authDomain: "miaudote-a9379.firebaseapp.com",
   projectId: "miaudote-a9379",
   storageBucket: "miaudote-a9379.firebasestorage.app",
-  messagingSenderId: "1:702289945083:web:addb9fe8aa4fd0aa8fab5e",
-  appId: "1:702289945083:web:addb9fe8aa4fd0aa8fab5e",
-  measurementId: "G-BR1T7N0K7E"
+  messagingSenderId: "702289945083",
+  appId: "1:702289945083:web:591896536ab177238fab5e",
+  measurementId: "G-JBEDQPVBBP"
 
 };
 

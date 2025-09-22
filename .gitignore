@@ -11,3 +11,6 @@
 # App
 /node_modules_ts/
 /node_modules_js/
+
+# firebase
+firebase.ts
