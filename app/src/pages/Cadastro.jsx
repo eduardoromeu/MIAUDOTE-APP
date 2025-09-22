@@ -5,8 +5,11 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import { UserClass } from "../UserClass";
 import { useNavigate } from 'react-router';
+
+// 1. Importar o necessário do Firebase
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../firebase"; // Verifique se o caminho está correto
 
 const style = {
     position: 'absolute',
@@ -26,22 +29,53 @@ export default function Cadastro() {
     const handleOpen = () => setOpen(true);
     const handleClose = () => {
         setOpen(false);
-        // window.location.href = "/MIAUDOTE/";
-        navigate("/MIAUDOTE/");
+        // Após o cadastro, o usuário já estará logado,
+        // então o redirecionamos para a página principal.
+        navigate("/");
     };
 
-    // Forms
+    // Forms - Mantemos os estados para os campos
     const [nome, setNome] = React.useState("");
-    const [telefone, setTelefone] = React.useState("");
+    const [telefone, setTelefone] = React.useState(""); // Nota sobre o telefone abaixo
     const [email, setEmail] = React.useState("");
     const [senha, setSenha] = React.useState("");
+    // 2. Adicionar um estado para mensagens de erro
+    const [error, setError] = React.useState("");
 
-    function Cadastrar(e) {
-        handleOpen();
+    // 3. Modificar a função Cadastrar para usar Firebase
+    async function Cadastrar(e) {
         e.preventDefault();
-        const newUser = new UserClass(nome, telefone, email, senha, "", []);
-        
-        localStorage.setItem("user", JSON.stringify(newUser));
+        setError(""); // Limpa erros anteriores
+
+        if (!nome || !email || !senha) {
+            setError("Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        try {
+            // Cria o usuário com e-mail e senha
+            const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+            const user = userCredential.user;
+
+            // Adiciona o nome do usuário ao perfil do Firebase
+            await updateProfile(user, {
+                displayName: nome,
+            });
+
+            console.log("Usuário cadastrado com sucesso:", user);
+            handleOpen(); // Abre o modal de sucesso
+
+        } catch (err) {
+            // 4. Captura e exibe erros comuns do Firebase
+            console.error("Erro no cadastro:", err.code);
+            if (err.code === 'auth/email-already-in-use') {
+                setError("Este e-mail já está cadastrado.");
+            } else if (err.code === 'auth/weak-password') {
+                setError("A senha precisa ter no mínimo 6 caracteres.");
+            } else {
+                setError("Ocorreu um erro ao realizar o cadastro. Tente novamente.");
+            }
+        }
     }
 
     return (
@@ -53,29 +87,31 @@ export default function Cadastro() {
                 onSubmit={Cadastrar}
             >
                 <TextField
-                    id="outlined"
+                    id="outlined-name"
                     label="Nome"
-                    defaultValue=""
                     required
                     sx={{minWidth: '100%'}}
+                    value={nome}
                     onChange={e => { setNome(e.target.value) }}
                 />
 
                 <TextField
-                    id="outlined-number"
+                    id="outlined-tel"
                     label="Telefone"
                     type="tel"
                     required
                     sx={{minWidth: '100%'}}
+                    value={telefone}
                     onChange={e => { setTelefone(e.target.value) }}
                 />
 
                 <TextField
                     id="outlined-email"
                     label="Email"
-                    type="mail"
+                    type="email" // Corrigido de 'mail' para 'email'
                     required
                     sx={{minWidth: '100%'}}
+                    value={email}
                     onChange={e => { setEmail(e.target.value) }}
                 />
 
@@ -83,11 +119,20 @@ export default function Cadastro() {
                     id="outlined-password-input"
                     label="Senha"
                     type="password"
-                    autoComplete="current-password"
+                    autoComplete="new-password" // Melhor para cadastro
                     required
                     sx={{minWidth: '100%'}}
+                    value={senha}
                     onChange={e => { setSenha(e.target.value) }}
                 />
+
+                {/* 5. Exibir a mensagem de erro, se houver */}
+                {error && (
+                    <Typography color="error" variant="body2" textAlign="center" sx={{ my: 1 }}>
+                        {error}
+                    </Typography>
+                )}
+
                 <Button variant="contained" type="submit" fullWidth>Confirmar</Button>
             </Stack>
             <div>
@@ -99,7 +144,7 @@ export default function Cadastro() {
                 >
                     <Box sx={style}>
                         <Typography id="modal-modal-title" variant="h6" component="h2">
-                            Parabens!
+                            Parabéns!
                         </Typography>
                         <Typography id="modal-modal-description" sx={{ mt: 2 }}>
                             Seu cadastro foi realizado com sucesso!
