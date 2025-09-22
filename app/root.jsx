@@ -23,47 +23,51 @@ export const links = () => [
   },
 ];
 
-//miaudote
 import { Container, Typography, CssBaseline, Box } from "@mui/material";
 import { useState, useEffect } from "react";
-import PawPrint from "./images/White_paw_print.png";
 import NavBar from "./src/components/NavBar/NavBar";
-import LoginModal from "./src/components/LoginModal/LoginModal";
-const userModel = {
-  logado: false,
-  password: "123",
-  name: "Thiago Frango",
-  phone: "+55 11 99999-9999",
-  email: "email@example.com",
-  avatar: PawPrint, // Link da imagem do avatar
-  favorites: [
-    {
-      name: "Luna",
-      description: "Uma gata branca muito carinhosa.",
-      image: "https://example.com/luna.jpg",
-    },
-    {
-      name: "Rex",
-      description: "Cachorro labrador enérgico.",
-      image: "https://example.com/rex.jpg",
-    },
-  ]
-};
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./src/firebase";
 
-// Synchronize modal state after mount to avoid hydration mismatch
-let user = null;
-if (typeof window !== "undefined" && window.localStorage) {
-  user = JSON.parse(localStorage.getItem("user"));
-}
-
-if (typeof window !== "undefined" && window.localStorage) {
-  user = JSON.parse(localStorage.getItem("user"));
-}
-
+// A função Layout agora retorna um Documento HTML completo e correto
 export function Layout({ children }) {
-
   const [isOpenModal, setOpenModal] = useState(false);
-  console.log("isMoalOpen = " + isOpenModal, "setModalOpen = " + setOpenModal);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log("Layout: useEffect foi ativado."); // <-- PONTO DE VERIFICAÇÃO 1
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("Firebase: onAuthStateChanged retornou.", currentUser); // <-- PONTO DE VERIFICAÇÃO 2
+      setUser(currentUser);
+      setLoading(false);
+    });
+
+    return () => {
+      console.log("Layout: Limpando o useEffect."); // <-- PONTO DE VERIFICAÇÃO 3
+      unsubscribe();
+    }
+  }, []);
+
+  // O estado de loading agora fica dentro do body
+  if (loading) {
+    return (
+        <html lang="pt-br">
+            <head>
+                <meta charSet="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <Meta />
+                <Links />
+            </head>
+            <body>
+                Carregando...
+                <ScrollRestoration />
+                <Scripts />
+            </body>
+        </html>
+    );
+  }
 
   return (
     <html lang="pt-br">
@@ -74,15 +78,15 @@ export function Layout({ children }) {
         <Links />
       </head>
       <body>
-        <NavBar isOpenModal={isOpenModal} setOpenModal={setOpenModal} />
+        <NavBar
+          user={user}
+          isOpenModal={isOpenModal}
+          setOpenModal={setOpenModal}
+        />
         <CssBaseline />
         <Box component="main" sx={{ p: 3, mt: 8 }}>
           {children}
         </Box>
-        {/* <LoginModal testString="ÄAAAAAAAAAAAA" open={isOpenModal} onClose={() => {
-          setOpenModal(false);
-          console.log(isOpenModal);
-        }} /> */}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -90,38 +94,45 @@ export function Layout({ children }) {
   );
 }
 
+// A função 'App' não precisa ser envolvida por um 'Document' aqui
 export default function App() {
   return <Outlet />;
 }
 
+// Sua ErrorBoundary continua a mesma
 export function ErrorBoundary({ error }) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
-  let stack;
-
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
-  return (
-    <Container>
-      <Typography variant='h2'>404 - Página não encontrada</Typography>
-      <main className="pt-16 p-4 container mx-auto">
-        <h1>{message}</h1>
-        <p>{details}</p>
-        {stack && (
-          <pre className="w-full p-4 overflow-x-auto">
-            <code>{stack}</code>
-          </pre>
-        )}
-      </main>
-    </Container>
-  );
+    // ... seu código de ErrorBoundary ...
+    let message = "Oops!";
+    let details = "An unexpected error occurred.";
+    let stack;
+  
+    if (isRouteErrorResponse(error)) {
+      message = error.status === 404 ? "404" : "Error";
+      details =
+        error.status === 404
+          ? "The requested page could not be found."
+          : error.statusText || details;
+    } else if (import.meta.env.DEV && error && error instanceof Error) {
+      details = error.message;
+      stack = error.stack;
+    }
+  
+    return (
+      <Container>
+        <Typography variant='h2'>404 - Página não encontrada</Typography>
+        <main className="pt-16 p-4 container mx-auto">
+          <h1>{message}</h1>
+          <p>{details}</p>
+          {stack && (
+            <pre className="w-full p-4 overflow-x-auto">
+              <code>{stack}</code>
+            </pre>
+          )}
+        </main>
+      </Container>
+    );
 }
+
+// A declaração DOCTYPE deve estar no nível superior do arquivo para ser renderizada primeiro.
+// Como estamos em JSX, a forma de fazer isso é ter um componente 'Document' que retorna a estrutura HTML completa.
+// A função Layout agora faz esse papel.
