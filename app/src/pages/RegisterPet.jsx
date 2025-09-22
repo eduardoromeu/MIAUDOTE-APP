@@ -1,60 +1,83 @@
-// app/src/pages/RegisterPet.jsx
-
 import React, { useState } from 'react';
-import { Container, Typography, Stack, TextField, Button, Box, Modal, CircularProgress } from '@mui/material';
-import { useOutletContext, useNavigate } from 'react-router';
+import { Container, Typography, Stack, TextField, Button, Box, Modal, CircularProgress, Alert } from '@mui/material';
+import { useOutletContext } from 'react-router'; // Mantemos este que funciona
 
-// Imports do Firebase para adicionar dados
+// Imports do Firebase (sem alterações)
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from '../firebase'; // Verifique o caminho
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from '../firebase';
 
-const style = { /* ... seu estilo do modal ... */ };
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
 
 export default function RegisterPet() {
-    const { user } = useOutletContext(); // Pega o usuário logado
-    const navigate = useNavigate();
+    const { user } = useOutletContext();
+    // A linha com 'useNavigate' FOI REMOVIDA
 
     const [petName, setPetName] = useState('');
     const [description, setDescription] = useState('');
     const [age, setAge] = useState('');
     const [breed, setBreed] = useState('');
-    // Adicione mais 'useState' para outros campos se precisar (gênero, porte, etc.)
-
+    const [imageFile, setImageFile] = useState(null);
+    const [imageError, setImageError] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [openModal, setOpenModal] = useState(false);
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.type.startsWith('image/')) {
+                setImageFile(file);
+                setImageError('');
+            } else {
+                setImageFile(null);
+                setImageError('Por favor, selecione um arquivo de imagem (jpg, png, etc).');
+            }
+        }
+    };
+
     const handleRegisterPet = async (e) => {
         e.preventDefault();
-        setError('');
-
+        if (!imageFile) {
+            setImageError('A foto do pet é obrigatória.');
+            return;
+        }
         if (!petName || !description || !age || !breed) {
             setError('Por favor, preencha todos os campos.');
             return;
         }
 
         setLoading(true);
+        setError('');
 
         try {
-            // Cria uma referência para a coleção 'pets'
-            const petsCollectionRef = collection(db, "pets");
+            const imageRef = ref(storage, `pets/${Date.now()}-${imageFile.name}`);
+            const uploadResult = await uploadBytes(imageRef, imageFile);
+            const downloadURL = await getDownloadURL(uploadResult.ref);
 
-            // Adiciona um novo documento (um novo pet) à coleção
-            await addDoc(petsCollectionRef, {
+            await addDoc(collection(db, "pets"), {
                 name: petName,
                 description: description,
                 age: age,
                 breed: breed,
-                ownerId: user.uid, // Associa o pet ao usuário logado
+                ownerId: user.uid,
                 ownerName: user.displayName,
-                createdAt: serverTimestamp(), // Adiciona a data de criação
-                // Futuramente, aqui você adicionará a URL da imagem
-                imageUrl: 'https://via.placeholder.com/400' 
+                createdAt: serverTimestamp(),
+                imageUrl: downloadURL
             });
 
-            console.log("Pet cadastrado com sucesso!");
             setLoading(false);
-            setOpenModal(true); // Abre o modal de sucesso
+            setOpenModal(true);
 
         } catch (err) {
             console.error("Erro ao cadastrar o pet: ", err);
@@ -65,7 +88,8 @@ export default function RegisterPet() {
     
     const handleCloseModal = () => {
         setOpenModal(false);
-        navigate('/search-pets'); // Redireciona para a página de busca após o sucesso
+        // CORREÇÃO: Usa a navegação padrão do navegador
+        window.location.href = '/search-pets';
     };
 
     return (
@@ -74,6 +98,13 @@ export default function RegisterPet() {
                 Cadastrar um Novo Pet
             </Typography>
             <Stack component="form" onSubmit={handleRegisterPet} spacing={2}>
+                <Button variant="outlined" component="label">
+                    Selecionar Foto do Pet
+                    <input type="file" hidden onChange={handleImageChange} accept="image/*" />
+                </Button>
+                {imageFile && <Typography variant="body2">Arquivo: {imageFile.name}</Typography>}
+                {imageError && <Alert severity="error">{imageError}</Alert>}
+
                 <TextField label="Nome do Pet" value={petName} onChange={e => setPetName(e.target.value)} required />
                 <TextField label="Descrição" value={description} onChange={e => setDescription(e.target.value)} multiline rows={4} required />
                 <TextField label="Idade" value={age} onChange={e => setAge(e.target.value)} required />
