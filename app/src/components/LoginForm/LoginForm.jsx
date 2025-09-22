@@ -1,31 +1,40 @@
-import react, { useState } from "react";
+import React, { useState } from "react";
 import { FormControl, Typography, Button, Stack, Link, Box } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
 import IconInput from "../IconInput/IconInput";
-import { UserClass } from "../../UserClass.js";
+// 1. Importar o necessário do Firebase
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase"; // Verifique se o caminho para seu firebase.ts está correto
 
 export default function LoginForm() {
-    const [login, setLogin] = useState("")
-    const [password, setPassword] = useState("")
+    // Mantemos os estados para e-mail (login) e senha
+    const [login, setLogin] = useState("");
+    const [password, setPassword] = useState("");
+    // 2. Adicionar um estado para mensagens de erro
+    const [error, setError] = useState("");
     
-    function Logar() {
-        // const user = JSON.parse(localStorage.getItem("user"));
-        // console.log(user);
-        // console.log(`login: ${login}, password: ${password}`);
+    // 3. Modificar a função Logar para usar Firebase
+    async function Logar() {
+        setError(""); // Limpa erros anteriores
 
-        // if(!user){
-        //     alert("Usuário ou senha incorretos, tente novamente!");
-        //     return;
-        // }
+        if (!login || !password) {
+            setError("Por favor, preencha o e-mail e a senha.");
+            return;
+        }
 
-        // if((login === user.name || login === user.email || login === user.phone) && user.password === password){
-        //     user.logado = true;
-        //     UserClass.SaveUser(user);
-        //     window.location.href = "/MIAUDOTE/";
-        //     console.log(user);
-        // } else {
-        //     alert("Usuário ou senha incorretos, tente novamente!");
-        // }
+        try {
+            // Tenta fazer o login com o e-mail e senha fornecidos
+            const userCredential = await signInWithEmailAndPassword(auth, login, password);
+            console.log("Login bem-sucedido!", userCredential.user);
+            
+            // Redireciona o usuário para a página principal após o login
+            window.location.href = "/MIAUDOTE/";
+
+        } catch (err) {
+            // 4. Captura e exibe erros de autenticação
+            console.error("Erro no login:", err.message);
+            setError("E-mail ou senha incorretos. Tente novamente!");
+        }
     }
 
     return (
@@ -35,8 +44,9 @@ export default function LoginForm() {
             </Typography>
             <IconInput
                 label="Usuário"
-                placeholder="Email ou telefone"
+                placeholder="Email" // Alterado para ser mais claro
                 required
+                value={login} // Controlar o valor do input
                 onChange={e => { setLogin(e.target.value) }}
             />
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: "flex-end" }}>
@@ -46,10 +56,19 @@ export default function LoginForm() {
                     type="password"
                     icon={<LockIcon />}
                     required
+                    value={password} // Controlar o valor do input
                     onChange={e => { setPassword(e.target.value) }}
                 />
                 <Link href="#" underline="hover" variant="subtitle2">Esqueci minha senha</Link>
             </Box>
+
+            {/* 5. Exibir a mensagem de erro, se houver */}
+            {error && (
+                <Typography color="error" variant="body2" textAlign="center">
+                    {error}
+                </Typography>
+            )}
+
             <Button variant="contained" onClick={Logar}>Continuar</Button>
             <Button component="a" href="/MIAUDOTE/cadastro-usuario" variant="outlined">Não sou cadastrado</Button>
         </FormControl>

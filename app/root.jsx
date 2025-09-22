@@ -85,7 +85,7 @@ export function Layout({ children }) {
         />
         <CssBaseline />
         <Box component="main" sx={{ p: 3, mt: 8 }}>
-          {children}
+            <Outlet context={{ user }} />
         </Box>
         <ScrollRestoration />
         <Scripts />
