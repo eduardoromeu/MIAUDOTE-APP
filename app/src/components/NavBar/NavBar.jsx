@@ -169,7 +169,7 @@ export default function NavBar({ user, setOpenModal }) {
               // Se o usuário NÃO EXISTE (não está logado)
               <Stack direction="row">
                 <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar</Button>
-                <Button color="inherit" onClick={() => setOpenModal(true)}>Login</Button>
+                <Button color="inherit" component="a" href='/login'>Login</Button>
               </Stack>
             )}
           </Box>
