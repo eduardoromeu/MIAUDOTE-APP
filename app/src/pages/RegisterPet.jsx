@@ -73,7 +73,8 @@ export default function RegisterPet() {
                 ownerId: user.uid,
                 ownerName: user.displayName,
                 createdAt: serverTimestamp(),
-                imageUrl: downloadURL
+                imageUrl: downloadURL,
+                adopted: false
             });
 
             setLoading(false);

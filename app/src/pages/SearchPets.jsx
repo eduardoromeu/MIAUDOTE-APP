@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, CircularProgress, Box } from '@mui/material';
 
 // 1. IMPORTS DO FIREBASE PARA LER DADOS
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { db } from '../firebase'; // Verifique se o caminho está correto
 
 // 2. IMPORTE SEU COMPONENTE DE CARD DE PET
@@ -20,7 +20,7 @@ export default function SearchPets() {
             try {
                 // Cria uma consulta para buscar todos os documentos da coleção 'pets'
                 // e ordena pelos mais recentes primeiro.
-                const q = query(collection(db, "pets"), orderBy("createdAt", "desc"));
+                const q = query(collection(db, "pets"), where("adopted", "==", false), orderBy("createdAt", "desc"));
                 
                 // Executa a consulta
                 const querySnapshot = await getDocs(q);

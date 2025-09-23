@@ -4,7 +4,7 @@ import PetCard from '../components/PetCard/PetCard';
 import SuccessStories from "../pages/SuccessStories";
 
 // 1. IMPORTS DO FIREBASE PARA LER DADOS
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
 import { db } from '../firebase'; // Verifique se o caminho está correto
 
 function Home() {
@@ -18,7 +18,12 @@ function Home() {
       try {
         // Cria uma consulta para buscar todos os documentos da coleção 'pets'
         // e ordena pelos mais recentes primeiro.
-        const q = query(collection(db, "pets"), orderBy("createdAt", "desc"));
+        const q = query(
+          collection(db, "pets"),
+          where("adopted", "==", false),
+          orderBy("createdAt", "desc"),
+          limit(3)
+        );
 
         // Executa a consulta
         const querySnapshot = await getDocs(q);
@@ -70,7 +75,10 @@ function Home() {
               </Grid>
             ))}
           </Grid>
-          <Button variant='contained' size='large' sx={{ mt: "1em", flex: 0, alignSelf: "center" }}>
+          <Button 
+            variant='contained' size='large' sx={{ mt: "1em", flex: 0, alignSelf: "center" }}
+            component="a" href="/search-pets"
+          >
             Ver mais pets
           </Button>
 
@@ -78,25 +86,26 @@ function Home() {
             <Typography variant="h4" component="h1" align='center' gutterBottom>
               Deseja cadastrar um pet para adoção?
             </Typography>
-            <Button variant='contained' size='large'>
+            <Button variant='contained' size='large' component="a" href="/register-pet">
               Cadastrar novo pet
             </Button>
           </Container>
         </Container>
       ) : (
-        <Container sx={{ mt: '5em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <Typography sx={{ textAlign: 'center', mt: 5 }}>
+        <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Typography variant="h4" component="h1" align='center' gutterBottom>
             Nenhum pet cadastrado no momento. Seja o primeiro a adicionar um!
           </Typography>
-          <Button variant='contained' size='large'>
+          <Button variant='contained' size='large' component="a" href="/register-pet">
             Cadastrar novo pet
           </Button>
         </Container>
       )}
 
+      {/* TODO Fazer buscar pets com adopted = true na database */}
       <Container sx={{ mt: '5em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <SuccessStories />
-        <Button variant='outlined' size='large' sx={{ mt: "1em"}}>
+        <Button variant='outlined' size='large' sx={{ mt: "1em"}} component="a" href="/success-stories">
           Ver mais
         </Button>
       </Container>
