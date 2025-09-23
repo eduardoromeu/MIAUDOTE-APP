@@ -104,9 +104,9 @@ function Home() {
 
       {/* TODO Fazer buscar pets com adopted = true na database */}
       <Container sx={{ mt: '5em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <SuccessStories />
+        <SuccessStories cardsLimit={3} />
         <Button variant='outlined' size='large' sx={{ mt: "1em"}} component="a" href="/success-stories">
-          Ver mais
+          Ver mais adoções concluídas
         </Button>
       </Container>
     </Container>

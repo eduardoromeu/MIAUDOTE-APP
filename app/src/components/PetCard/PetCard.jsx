@@ -1,10 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, CardActions } from '@mui/material';
 import PetHouseIcon from '../../../images/dog-house.png';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 // 1. O componente agora recebe uma única prop: 'petData'
-export default function PetCard({ petData }) {
-  
+export default function PetCard({ petData, showOwner = false }) {
+
   // 2. Verificação para o caso de dados incompletos
   if (!petData) {
     return null; // Não renderiza nada se não houver dados
@@ -18,9 +19,9 @@ export default function PetCard({ petData }) {
         component="img"
         height="140"
         // 3. Usa os campos do objeto petData
-        image={petData.imageUrl} 
+        image={petData.imageUrl}
         alt={petData.name}
-        sx={{backgroundColor: '#b3e5fc'}}
+        sx={{ backgroundColor: '#b3e5fc' }}
         onError={(ev) => {
           ev.target.src = PetHouseIcon;
         }}
@@ -33,12 +34,18 @@ export default function PetCard({ petData }) {
           {/* Mostra os primeiros 100 caracteres da descrição */}
           {petData.description ? `${petData.description.substring(0, 100)}...` : 'Nenhuma descrição disponível.'}
         </Typography>
+        {showOwner ?
+          <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mt: '1em' }}>
+            <AccountCircleIcon sx={{ mr: ".25em" }} /> {petData.ownerName}
+          </Typography> 
+          : <></> }
+
       </CardContent>
       <CardActions>
-        <Button 
+        <Button
           // 4. Usa um link 'a' padrão para máxima compatibilidade
-          component="a" 
-          href={`/pet/${petData.id}`} 
+          component="a"
+          href={`/pet/${petData.id}`}
           size="small"
         >
           Ver Mais
