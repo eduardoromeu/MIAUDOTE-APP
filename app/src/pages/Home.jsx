@@ -1,33 +1,105 @@
-import React from 'react';
-import { Container, Grid, Typography } from '@mui/material'; // Usando Grid do core, é mais comum
+import React, { useState, useEffect } from 'react';
+import { Container, Grid, Typography, CircularProgress, Button } from '@mui/material'; // Usando Grid do core, é mais comum
 import PetCard from '../components/PetCard/PetCard';
-import Rufus from '../../images/rufus.avif';
+import SuccessStories from "../pages/SuccessStories";
+
+// 1. IMPORTS DO FIREBASE PARA LER DADOS
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { db } from '../firebase'; // Verifique se o caminho está correto
 
 function Home() {
-  const pets = [
-    { id: 1, name: 'Fofinho', description: 'Gato muito carinhoso!', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKy5Zq3nDNcIKQEtTvd1iJTSzxQk4UO53QrA&s' },
-    { id: 2, name: 'Rex', description: 'Cachorro brincalhão e esperto.', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTekrqEm8Pps8NR1x2kRA2N2WTL23Q9R9nVbw&s' },
-    { id: 3, name: 'Rufus', description: 'Cachorro dócil e amigável.', image: Rufus }
-  ];
+  // 3. ESTADOS PARA GUARDAR OS PETS E CONTROLAR O CARREGAMENTO
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 4. useEffect PARA BUSCAR OS DADOS QUANDO A PÁGINA CARREGA
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        // Cria uma consulta para buscar todos os documentos da coleção 'pets'
+        // e ordena pelos mais recentes primeiro.
+        const q = query(collection(db, "pets"), orderBy("createdAt", "desc"));
+
+        // Executa a consulta
+        const querySnapshot = await getDocs(q);
+
+        // Mapeia os resultados, adicionando o ID do documento a cada objeto de pet
+        const petsList = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setPets(petsList);
+
+      } catch (error) {
+        console.error("Erro ao buscar pets: ", error);
+      } finally {
+        // Garante que o 'loading' termine, mesmo se der erro
+        setLoading(false);
+      }
+    };
+
+    fetchPets();
+  }, []); // O array vazio [] garante que esta função rode apenas uma vez.
+
+  // 5. RENDERIZAÇÃO CONDICIONAL
+  // Exibe um spinner de carregamento enquanto os dados são buscados
+  if (loading) {
+    return (
+      <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Container sx={{ minHeight: "120vh" }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Pets para Adoção
-      </Typography>
-      {/* Troquei Grid2 por Grid, que é o mais padrão */}
-      <Grid container spacing={3}>
-        {pets.map((pet) => (
-          // A mudança principal está aqui: passamos o id do pet para o PetCard
-          <PetCard
-            key={pet.id}
-            id={pet.id} // <-- ADICIONADO AQUI
-            name={pet.name}
-            description={pet.description}
-            image={pet.image}
-          />
-        ))}
-      </Grid>
+
+      {/* Exibe a lista de pets ou uma mensagem se não houver nenhum */}
+      {pets.length > 0 ? (
+        <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <Typography variant="h4" component="h1" align='center' gutterBottom>
+            Útilmos pets cadastrados
+          </Typography>
+
+          <Grid container spacing={4} justifyContent="center">
+            {pets.map(pet => (
+              <Grid item key={pet.id} xs={12} sm={6} md={4}>
+                {/* 6. PASSA OS DADOS DE CADA PET PARA O PetCard */}
+                <PetCard petData={pet} />
+              </Grid>
+            ))}
+          </Grid>
+          <Button variant='contained' size='large' sx={{ mt: "1em", flex: 0, alignSelf: "center" }}>
+            Ver mais pets
+          </Button>
+
+          <Container sx={{ mt: '5em', mx: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="h4" component="h1" align='center' gutterBottom>
+              Deseja cadastrar um pet para adoção?
+            </Typography>
+            <Button variant='contained' size='large'>
+              Cadastrar novo pet
+            </Button>
+          </Container>
+        </Container>
+      ) : (
+        <Container sx={{ mt: '5em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Typography sx={{ textAlign: 'center', mt: 5 }}>
+            Nenhum pet cadastrado no momento. Seja o primeiro a adicionar um!
+          </Typography>
+          <Button variant='contained' size='large'>
+            Cadastrar novo pet
+          </Button>
+        </Container>
+      )}
+
+      <Container sx={{ mt: '5em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <SuccessStories />
+        <Button variant='outlined' size='large' sx={{ mt: "1em"}}>
+          Ver mais
+        </Button>
+      </Container>
     </Container>
   );
 }
