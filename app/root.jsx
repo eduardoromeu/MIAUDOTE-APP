@@ -23,7 +23,7 @@ export const links = () => [
   },
 ];
 
-import { Container, Typography, CssBaseline, Box } from "@mui/material";
+import { Container, Typography, CssBaseline, Box, CircularProgress } from "@mui/material";
 import { useState, useEffect } from "react";
 import NavBar from "./src/components/NavBar/NavBar";
 import { onAuthStateChanged } from "firebase/auth";
@@ -53,19 +53,24 @@ export function Layout({ children }) {
   // O estado de loading agora fica dentro do body
   if (loading) {
     return (
-        <html lang="pt-br">
-            <head>
-                <meta charSet="utf-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <Meta />
-                <Links />
-            </head>
-            <body>
-                Carregando...
-                <ScrollRestoration />
-                <Scripts />
-            </body>
-        </html>
+      <html lang="pt-br">
+        <head>
+          <meta charSet="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <Meta />
+          <Links />
+        </head>
+        <body>
+          <Container sx={{ 
+            height: "100%", display: "flex", flexDirection: 'column',
+            justifyContent: 'center', alignItems: 'center'
+            }}>
+            <CircularProgress />
+          </Container>
+          <ScrollRestoration />
+          <Scripts />
+        </body>
+      </html>
     );
   }
 
@@ -85,7 +90,7 @@ export function Layout({ children }) {
         />
         <CssBaseline />
         <Box component="main" sx={{ p: 3, mt: 8 }}>
-            <Outlet context={{ user }} />
+          <Outlet context={{ user }} />
         </Box>
         <ScrollRestoration />
         <Scripts />
@@ -101,36 +106,36 @@ export default function App() {
 
 // Sua ErrorBoundary continua a mesma
 export function ErrorBoundary({ error }) {
-    // ... seu código de ErrorBoundary ...
-    let message = "Oops!";
-    let details = "An unexpected error occurred.";
-    let stack;
-  
-    if (isRouteErrorResponse(error)) {
-      message = error.status === 404 ? "404" : "Error";
-      details =
-        error.status === 404
-          ? "The requested page could not be found."
-          : error.statusText || details;
-    } else if (import.meta.env.DEV && error && error instanceof Error) {
-      details = error.message;
-      stack = error.stack;
-    }
-  
-    return (
-      <Container>
-        <Typography variant='h2'>404 - Página não encontrada</Typography>
-        <main className="pt-16 p-4 container mx-auto">
-          <h1>{message}</h1>
-          <p>{details}</p>
-          {stack && (
-            <pre className="w-full p-4 overflow-x-auto">
-              <code>{stack}</code>
-            </pre>
-          )}
-        </main>
-      </Container>
-    );
+  // ... seu código de ErrorBoundary ...
+  let message = "Oops!";
+  let details = "An unexpected error occurred.";
+  let stack;
+
+  if (isRouteErrorResponse(error)) {
+    message = error.status === 404 ? "404" : "Error";
+    details =
+      error.status === 404
+        ? "The requested page could not be found."
+        : error.statusText || details;
+  } else if (import.meta.env.DEV && error && error instanceof Error) {
+    details = error.message;
+    stack = error.stack;
+  }
+
+  return (
+    <Container>
+      <Typography variant='h2'>404 - Página não encontrada</Typography>
+      <main className="pt-16 p-4 container mx-auto">
+        <h1>{message}</h1>
+        <p>{details}</p>
+        {stack && (
+          <pre className="w-full p-4 overflow-x-auto">
+            <code>{stack}</code>
+          </pre>
+        )}
+      </main>
+    </Container>
+  );
 }
 
 // A declaração DOCTYPE deve estar no nível superior do arquivo para ser renderizada primeiro.
