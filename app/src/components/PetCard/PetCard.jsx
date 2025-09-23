@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, CardActions } from '@mui/material';
+import PetHouseIcon from '../../../images/dog-house.png';
 
 // 1. O componente agora recebe uma única prop: 'petData'
 export default function PetCard({ petData }) {
@@ -19,6 +20,10 @@ export default function PetCard({ petData }) {
         // 3. Usa os campos do objeto petData
         image={petData.imageUrl} 
         alt={petData.name}
+        sx={{backgroundColor: '#b3e5fc'}}
+        onError={(ev) => {
+          ev.target.src = PetHouseIcon;
+        }}
       />
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography gutterBottom variant="h5" component="div">
