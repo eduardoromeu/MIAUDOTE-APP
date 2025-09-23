@@ -14,6 +14,7 @@ export default function LoginForm() {
     
     async function Logar() {
         setError(""); 
+        console.log("Login...");
 
         if (!login || !password) {
             setError("Por favor, preencha o e-mail e a senha.");
@@ -35,7 +36,8 @@ export default function LoginForm() {
 
     return (
         // Adicionado onSubmit ao formulário para funcionar com a tecla Enter
-        <FormControl component="form" onSubmit={(e) => { e.preventDefault(); Logar(); }} as={Stack} spacing={2}>
+        <FormControl component="form" onSubmit={(e) => { e.preventDefault(); Logar(); }}>
+          <Stack spacing={2}>
             <Typography id="modal-modal-title" variant="h5" component="h2">
                 Entrar
             </Typography>
@@ -67,6 +69,7 @@ export default function LoginForm() {
 
             <Button variant="contained" type="submit">Continuar</Button>
             <Button component="a" href="/cadastro-usuario" variant="outlined">Não sou cadastrado</Button>
+          </Stack>
         </FormControl>
     );
 }
