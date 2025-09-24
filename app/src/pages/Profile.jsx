@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Container, Typography, Avatar, Box, TextField, Stack, Button, CircularProgress } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Avatar, Box, TextField, Stack, Button, CircularProgress, Grid } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import PetCard from '../components/PetCard/PetCard';
 
 // 1. Import from 'react-router' WHICH YOUR PROJECT ALREADY USES
 import { useOutletContext } from 'react-router';
 import { signOut, updateProfile } from 'firebase/auth';
-import { auth } from '../firebase'; // Make sure this path is correct
+import { auth, db } from '../firebase'; // Make sure this path is correct
+import { doc, getDoc, query, documentId, where, collection, getDocs } from "firebase/firestore";
 
 export default function Profile() {
   // 2. This now correctly gets the user from root.jsx
@@ -16,10 +18,57 @@ export default function Profile() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user ? user.displayName : '');
+  const [favorites, setFavorites] = useState({});
 
-  // PETS favoritos
-  const [pets, setPets] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // Get user favorites
+  useEffect(() => {
+    const checkFavorites = async () => {
+      if (!user) return;
+
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+
+        if (userData.favorites && userData.favorites.length > 0) {
+          const favorites = userData.favorites;
+          const chunks = [];
+
+          // divide em grupos de até 10
+          for (let i = 0; i < favorites.length; i += 10) {
+            chunks.push(favorites.slice(i, i + 10));
+          }
+
+          // dispara as queries em paralelo
+          const queries = chunks.map(chunk =>
+            getDocs(
+              query(
+                collection(db, "pets"),
+                where(documentId(), "in", chunk)
+              )
+            )
+          );
+
+          const snapshots = await Promise.all(queries);
+
+          // junta todos os resultados em um único array
+          const favPets = snapshots.flatMap(snap =>
+            snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+          );
+
+          setFavorites(favPets);
+          console.log(favPets);
+        } else {
+          setFavorites([]);
+        }
+      }
+    };
+
+    checkFavorites();
+  }, [user, db]);
+
+
 
   // Display a loading indicator if the user data hasn't arrived yet
   if (!user) {
@@ -102,32 +151,31 @@ export default function Profile() {
       </Stack>
 
       {/* Your favorite pets section can remain here */}
-      {(!user.favorites) ? (
-          <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-              <Typography variant="h5" sx={{ textAlign: 'center', mt: 5 }}>
-                Nenhum pet favorito. Adicione clicando no ícone <FavoriteBorderIcon />
+      {(!favorites) ? (
+        <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+          <CircularProgress />
+        </Container>
+      ) : (
+        <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+          {/* Exibe a lista de pets ou uma mensagem se não houver nenhum */}
+          {favorites.length > 0 ? (
+            <Container>
+              <Typography variant="h4" sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
+                Pets Favoritos
               </Typography>
-            {/* <CircularProgress /> */}
-          </Container>
-        ) : (
-          <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-            <Typography variant="h4" sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
-              Pets Favoritos
-            </Typography>
-            {/* Exibe a lista de pets ou uma mensagem se não houver nenhum */}
-            {user.favorites.length > 0 ? (
               <Grid container spacing={4} justifyContent="center">
-                {user.favorites.map(pet => (
-                  <></>
+                {favorites.map(pet => (
+                  <PetCard petData={pet} key={pet.id} />
                 ))}
               </Grid>
-            ) : (
-              <Typography variant="h5" sx={{ textAlign: 'center', mt: 5 }}>
-                Nenhum pet favorito. Adicione clicando no ícone <FavoriteBorderIcon />
-              </Typography>
-            )}
-          </Container>
-        )
+            </Container>
+          ) : (
+            <Typography variant="h5" sx={{ textAlign: 'center', mt: 5 }}>
+              Nenhum pet favorito. <br /> Adicione clicando no ícone <FavoriteBorderIcon />
+            </Typography>
+          )}
+        </Container>
+      )
       }
 
     </Container>

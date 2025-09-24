@@ -66,7 +66,7 @@ export default function SearchPets() {
                     {pets.map(pet => (
                         <Grid item key={pet.id} xs={12} sm={6} md={4}>
                             {/* 6. PASSA OS DADOS DE CADA PET PARA O PetCard */}
-                            <PetCard petData={pet} />
+                            <PetCard petData={pet} key={pet.id} />
                         </Grid>
                     ))}
                 </Grid>

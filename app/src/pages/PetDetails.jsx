@@ -10,15 +10,11 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import PetsIcon from '@mui/icons-material/Pets';
 import CakeIcon from '@mui/icons-material/Cake';
 import PersonIcon from '@mui/icons-material/Person';
-import WcIcon from '@mui/icons-material/Wc';
-import StraightenIcon from '@mui/icons-material/Straighten';
 
 import { useOutletContext } from 'react-router';
 // Import the necessary Firestore functions
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { db } from '../firebase'; // Ensure this path is correct
-
-// The old hardcoded 'pets' array has been completely removed.
 
 function PetDetails() {
   const { petId } = useParams(); // Gets the pet's ID from the URL
