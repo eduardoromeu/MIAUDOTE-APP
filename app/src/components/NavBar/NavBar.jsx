@@ -98,6 +98,12 @@ export default function NavBar({ user, setOpenModal }) {
                     </Button>
                   </MenuItem>
               ))}
+              <MenuItem onClick={handleCloseNavMenu} component="a" href='/cadastro-usuario'>
+                <Button sx={{ textAlign: 'center' }} size="small">Cadastrar</Button>
+              </MenuItem>
+              <MenuItem onClick={handleCloseNavMenu} component="a" href='/login'>
+                <Button sx={{ textAlign: 'center' }} size="small">Login</Button>
+              </MenuItem>
             </Menu>
           </Box>
 
@@ -167,7 +173,7 @@ export default function NavBar({ user, setOpenModal }) {
               </>
             ) : (
               // Se o usuário NÃO EXISTE (não está logado)
-              <Stack direction="row">
+              <Stack direction="row" sx={{ display: { xs: 'none', md: 'inherit' } }}>
                 <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar</Button>
                 <Button color="inherit" component="a" href='/login'>Login</Button>
               </Stack>
