@@ -4,8 +4,12 @@ import {
   AppBar, Box, Toolbar, IconButton, Typography, Menu,
   Container, Avatar, Button, Tooltip, MenuItem, Stack
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import AppLogo from '../AppLogo/AppLogo';
+import MenuIcon from '@mui/icons-material/Menu';
+import LoginIcon from '@mui/icons-material/Login';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 // 1. Imports para funcionalidade de Logout
 import { signOut } from 'firebase/auth';
@@ -26,13 +30,14 @@ const configs = [
 export default function NavBar({ user, setOpenModal }) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-
-  // O 'useNavigate' FOI REMOVIDO
+  const [anchorElNotif, setAnchorElNotif] = React.useState(null);
 
   const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
-  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
+  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
+  const handleOpenNotif = (event) => setAnchorElNotif(event.currentTarget);
+  const handleCloseNofit = () => setAnchorElNotif(null);
 
   // 2. Função de Logout agora usa window.location.href para redirecionar
   const handleLogout = async () => {
@@ -99,10 +104,10 @@ export default function NavBar({ user, setOpenModal }) {
                   </MenuItem>
               ))}
               <MenuItem onClick={handleCloseNavMenu} component="a" href='/cadastro-usuario'>
-                <Button sx={{ textAlign: 'center' }} size="small">Cadastrar</Button>
+                <Button size="small"><AppRegistrationIcon sx={{ mr: ".5em" }} />Cadastrar</Button>
               </MenuItem>
               <MenuItem onClick={handleCloseNavMenu} component="a" href='/login'>
-                <Button sx={{ textAlign: 'center' }} size="small">Login</Button>
+                <Button size="small"><LoginIcon sx={{ mr: ".5em" }} />Login</Button>
               </MenuItem>
             </Menu>
           </Box>
@@ -126,7 +131,7 @@ export default function NavBar({ user, setOpenModal }) {
                 <Button
                   key={href}
                   onClick={handleCloseNavMenu}
-                  sx={{ my: 2, color: 'white', display: 'block' }}
+                  sx={{ mt: ".2em", color: 'white', display: 'block' }}
                   component="a"
                   href={href}
                 >
@@ -139,6 +144,27 @@ export default function NavBar({ user, setOpenModal }) {
             {user ? (
               // Se o usuário EXISTE (está logado)
               <>
+                <Tooltip title="Notificações">
+                  <IconButton onClick={handleOpenNotif} sx={{ mr: '.25em' }}>
+                    <NotificationsNoneIcon htmlColor='white' />
+                  </IconButton>
+                </Tooltip>
+                  <Menu
+                  sx={{ mt: '45px' }}
+                  id="menu-notif"
+                  anchorEl={anchorElNotif}
+                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}  
+                  keepMounted
+                  open={Boolean(anchorElNotif)}
+                  onClose={handleCloseNofit}
+                >
+                  <MenuItem key="placeholder" onClick={handleCloseUserMenu}>
+                    Sem notificações
+                  </MenuItem>
+                </Menu>
+
+                {/* Menu Perfil usuário */}
                 <Tooltip title="Abrir configurações">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     <Avatar alt={user.displayName || ''}>
@@ -172,10 +198,10 @@ export default function NavBar({ user, setOpenModal }) {
                 </Menu>
               </>
             ) : (
-              // Se o usuário NÃO EXISTE (não está logado)
+              // Se o usuário NÃO EXISTE (não está logado) / tela média e grande
               <Stack direction="row" sx={{ display: { xs: 'none', md: 'inherit' } }}>
-                <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar</Button>
-                <Button color="inherit" component="a" href='/login'>Login</Button>
+                <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar<AppRegistrationIcon sx={{ ml: ".5em" }} /></Button>
+                <Button color="inherit" component="a" href='/login'>Login<LoginIcon sx={{ ml: ".5em" }} /></Button>
               </Stack>
             )}
           </Box>
