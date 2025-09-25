@@ -145,8 +145,10 @@ export default function NavBar({ user, setOpenModal }) {
             {user ? (
               // Se o usuário EXISTE (está logado)
               <>
+                {/* Notificações de adoções */}
                 <Tooltip title="Notificações">
                   <IconButton onClick={handleOpenNotif} sx={{ mr: '.25em' }}>
+                    {/* Substituir pelo NotificationIcon quando houver alguma */}
                     <NotificationsNoneIcon htmlColor='white' />
                   </IconButton>
                 </Tooltip>
@@ -162,7 +164,7 @@ export default function NavBar({ user, setOpenModal }) {
                 >
                   <Stack spacing={0} divider={<Divider orientation="horizontal" flexItem />}>
                     <MenuItem key="placeholder" onClick={handleCloseUserMenu}>
-                      <Notification text="{user} te enviou uma proposta de adoção para o pet {pet}" />
+                      <Notification userName="Eugênio" petName="Rufus" timestamp={Date.now()} />
                     </MenuItem>
                   </Stack>
                 </Menu>

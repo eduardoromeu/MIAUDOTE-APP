@@ -17,7 +17,7 @@ export default [
   route(null, "./src/components/ProtectedRoute.jsx", [
     // Todas as rotas aqui dentro exigirão login
     route("/register-pet", "./src/pages/RegisterPet.jsx"),
-    
+    route("/proposal:proposalIndex", "./src/pages/AdoptionProposal.jsx"),
    
     route("/profile", "./src/pages/Profile.jsx"), 
   ]),
