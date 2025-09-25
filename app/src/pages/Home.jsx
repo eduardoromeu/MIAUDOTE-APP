@@ -71,7 +71,7 @@ function Home() {
             {pets.map(pet => (
               <Grid item key={pet.id} xs={12} sm={6} md={4}>
                 {/* 6. PASSA OS DADOS DE CADA PET PARA O PetCard */}
-                <PetCard petData={pet} key={pet.id} />
+                <PetCard petData={pet} key={pet.id} showOwner={true} />
               </Grid>
             ))}
           </Grid>

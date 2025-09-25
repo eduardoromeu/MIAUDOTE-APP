@@ -2,7 +2,7 @@
 import * as React from 'react';
 import {
   AppBar, Box, Toolbar, IconButton, Typography, Menu,
-  Container, Avatar, Button, Tooltip, MenuItem, Stack
+  Container, Avatar, Button, Tooltip, MenuItem, Stack, Divider
 } from '@mui/material';
 import AppLogo from '../AppLogo/AppLogo';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -14,6 +14,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 // 1. Imports para funcionalidade de Logout
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase'; // Verifique se o caminho está correto
+import Notification from '../Notification';
 
 const paginas = [
   { label: "Cadastrar Pet", href: "/register-pet", requireLogin: true },
@@ -112,7 +113,7 @@ export default function NavBar({ user, setOpenModal }) {
             </Menu>
           </Box>
 
-          <IconButton
+          <Button
             edge="start"
             color="inherit"
             aria-label="menu"
@@ -120,10 +121,10 @@ export default function NavBar({ user, setOpenModal }) {
             href="/"
             disableRipple
             sx={{ display: { xs: 'flex', md: 'none' }, flexGrow: 1 }}
+            startIcon={<AppLogo />}
           >
-            <AppLogo />
-            <Typography variant='h5' sx={{ fontFamily: 'monospace', marginBottom: '-5px', marginLeft: '.25em' }}>MIAUDOTE</Typography>
-          </IconButton>
+            <Typography variant='h6' sx={{ fontFamily: 'monospace', marginBottom: '-5px' }}>MIAUDOTE</Typography>
+          </Button>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {paginas.map(({ label, href, requireLogin }) => (
@@ -149,19 +150,21 @@ export default function NavBar({ user, setOpenModal }) {
                     <NotificationsNoneIcon htmlColor='white' />
                   </IconButton>
                 </Tooltip>
-                  <Menu
+                <Menu
                   sx={{ mt: '45px' }}
                   id="menu-notif"
                   anchorEl={anchorElNotif}
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}  
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                   keepMounted
                   open={Boolean(anchorElNotif)}
                   onClose={handleCloseNofit}
                 >
-                  <MenuItem key="placeholder" onClick={handleCloseUserMenu}>
-                    Sem notificações
-                  </MenuItem>
+                  <Stack spacing={0} divider={<Divider orientation="horizontal" flexItem />}>
+                    <MenuItem key="placeholder" onClick={handleCloseUserMenu}>
+                      <Notification text="{user} te enviou uma proposta de adoção para o pet {pet}" />
+                    </MenuItem>
+                  </Stack>
                 </Menu>
 
                 {/* Menu Perfil usuário */}
