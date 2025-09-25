@@ -1,53 +1,72 @@
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Button, CardActions } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Button, CardActions, Box } from '@mui/material'; // Importe o Box
 import PetHouseIcon from '../../../images/dog-house.png';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
-// 1. O componente agora recebe uma única prop: 'petData'
 export default function PetCard({ petData, showOwner = false }) {
 
-  // 2. Verificação para o caso de dados incompletos
   if (!petData) {
-    return null; // Não renderiza nada se não houver dados
+    return null;
   }
 
   return (
-    // O Grid item foi removido daqui e deve ficar na página SearchPets,
-    // tornando este componente mais reutilizável.
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardMedia
-        component="img"
-        height="140"
-        // 3. Usa os campos do objeto petData
-        image={petData.imageUrl}
-        alt={petData.name}
-        sx={{ backgroundColor: '#b3e5fc' }}
-        onError={(ev) => {
-          ev.target.src = PetHouseIcon;
-        }}
-      />
+      
+      {/* MUDANÇA PRINCIPAL AQUI */}
+      {/* 1. Criamos um container (Box) que vai ser a nossa "moldura" quadrada. */}
+      <Box sx={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '100%' // Isso cria um quadrado perfeito (altura = 100% da largura)
+      }}>
+        {/* 2. A imagem (CardMedia) é posicionada para preencher essa moldura. */}
+        <CardMedia
+          component="img"
+          image={petData.imageUrl}
+          alt={petData.name}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover', // A imagem cobre a moldura sem distorcer
+            backgroundColor: '#b3e5fc',
+          }}
+          onError={(ev) => {
+            ev.target.src = PetHouseIcon;
+          }}
+        />
+      </Box>
+
+      {/* O resto do card permanece igual */}
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography gutterBottom variant="h5" component="div">
           {petData.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {/* Mostra os primeiros 100 caracteres da descrição */}
-          {petData.description ? `${petData.description.substring(0, 100)}...` : 'Nenhuma descrição disponível.'}
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: '3',
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {petData.description || 'Nenhuma descrição disponível.'}
         </Typography>
-        {showOwner ?
+
+        {showOwner && (
           <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mt: '1em' }}>
             <AccountCircleIcon sx={{ mr: ".25em" }} /> {petData.ownerName}
           </Typography> 
-          : <></> }
-
+        )}
       </CardContent>
+
       <CardActions>
-        <Button
-          // 4. Usa um link 'a' padrão para máxima compatibilidade
-          component="a"
-          href={`/pet/${petData.id}`}
-          size="small"
-        >
+        <Button component="a" href={`/pet/${petData.id}`} size="small">
           Ver Mais
         </Button>
       </CardActions>
