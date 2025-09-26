@@ -13,7 +13,14 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [userFavorites, setUserFavorites] = useState([]);
 
-  // ... (seu useEffect e handleToggleFavorite continuam exatamente iguais)
+  // MUDANÇA AQUI: O estado agora inicia como 'false' (minimizado)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleToggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // ... (o restante do seu código continua exatamente igual)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -77,7 +84,6 @@ function Home() {
     }
   };
 
-
   if (loading) {
     return (
       <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
@@ -87,16 +93,13 @@ function Home() {
   }
 
   return (
-    // 2. USE UM GRID CONTAINER COMO ELEMENTO PRINCIPAL
     <Grid container spacing={2} sx={{ minHeight: "120vh", mt: 2 }}>
       
-      {/* Coluna da Esquerda: Menu Lateral */}
-      <Grid item xs={12} md={3}> {/* Ocupa 3 de 12 colunas em telas médias/grandes */}
-        <SideMenu />
+      <Grid item xs={12} md={isMenuOpen ? 3 : 1} sx={{ transition: 'all 0.3s ease-in-out' }}>
+        <SideMenu isOpen={isMenuOpen} onToggle={handleToggleMenu} />
       </Grid>
 
-      {/* Coluna da Direita: Conteúdo Principal */}
-      <Grid item xs={12} md={9}> {/* Ocupa 9 de 12 colunas em telas médias/grandes */}
+      <Grid item xs={12} md={isMenuOpen ? 9 : 11} sx={{ transition: 'all 0.3s ease-in-out' }}>
         {pets.length > 0 ? (
           <>
             <Typography variant="h4" component="h1" align='center' gutterBottom>
@@ -126,16 +129,12 @@ function Home() {
                     Ver mais pets
                 </Button>
             </Box>
-
-            {/* 3. REMOVIDO O CONTAINER "Deseja cadastrar..." DAQUI */}
-            
           </>
         ) : (
           <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <Typography variant="h4" component="h1" align='center' gutterBottom>
               Nenhum pet cadastrado no momento.
             </Typography>
-            {/* O botão agora está permanentemente no menu lateral */}
           </Container>
         )}
 
