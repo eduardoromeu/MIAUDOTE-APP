@@ -11,22 +11,24 @@ import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { signOut } from 'firebase/auth';
-import { auth, db } from '../../firebase'; // Verifique o caminho
+import { auth, db } from '../../firebase';
 import Notification from '../Notification';
-
-// 1. IMPORTS ADICIONAIS DO FIRESTORE PARA BUSCA EM TEMPO REAL
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
+// 1. MUDANÇA AQUI: Adicionados os novos links à lista de páginas principais
 const paginas = [
-  { label: "Cadastrar Pet", href: "/register-pet", requireLogin: true },
   { label: "Buscar Pets", href: "/search-pets", requireLogin: false },
   { label: "Adoções Concluídas", href: "/success-stories", requireLogin: false },
+  { label: "Meus Favoritos", href: "/my-favorites", requireLogin: true }, // NOVO
+  { label: "Meus Pets", href: "/my-pets", requireLogin: true },       // NOVO
+  { label: "Cadastrar Pet", href: "/register-pet", requireLogin: true },
 ];
 
+// 2. MUDANÇA AQUI: Removidos os links duplicados do menu de configurações
 const configs = [
   { label: "Perfil", href: "/profile" },
-  { label: "Meus Favoritos", href: "/my-favorites" },
-  { label: "Meus Pets", href: "/my-pets" },
+  // { label: "Meus Favoritos", href: "/my-favorites" }, // REMOVIDO
+  // { label: "Meus Pets", href: "/my-pets" },       // REMOVIDO
   { label: "Sair", action: "logout" },
 ];
 
@@ -34,35 +36,24 @@ export default function NavBar({ user }) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [anchorElNotif, setAnchorElNotif] = React.useState(null);
-
-  // 2. NOVO ESTADO PARA ARMAZENAR AS NOTIFICAÇÕES
   const [notifications, setNotifications] = React.useState([]);
 
-  // 3. NOVO useEffect PARA BUSCAR NOTIFICAÇÕES EM TEMPO REAL
   React.useEffect(() => {
-    // Se o usuário estiver logado, cria o "ouvinte" de notificações
     if (user) {
       const q = query(
         collection(db, "proposals"),
         where("ownerId", "==", user.uid),
         where("status", "==", "pending")
       );
-
-      // onSnapshot escuta por mudanças em tempo real no banco de dados
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const notifs = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const notifs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setNotifications(notifs);
       });
-
-      // Limpa o "ouvinte" quando o componente é desmontado ou o usuário faz logout
       return () => unsubscribe();
     } else {
-      setNotifications([]); // Limpa as notificações se não houver usuário
+      setNotifications([]);
     }
-  }, [user]); // Este efeito roda sempre que o 'user' mudar
+  }, [user]);
 
   const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
@@ -85,38 +76,59 @@ export default function NavBar({ user }) {
     <AppBar position="fixed">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          {/* ... (Seu código do Logo e Menu Mobile - sem alterações) ... */}
+          {/* Logo */}
           <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ display: { xs: 'none', md: 'inline-flex' } }}
-            component="a"
-            href="/"
-          >
-            <AppLogo />
-            <Typography variant='h5' sx={{ fontFamily: 'monospace', marginBottom: '-5px', marginLeft: '.25em' }}>MIAUDOTE</Typography>
-          </IconButton>
-          {/* ... (código dos menus mobile e desktop - sem alterações) ... */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {paginas.map(({ label, href, requireLogin }) => (
-              (requireLogin && !user) ? null :
-                <Button
-                  key={href}
-                  onClick={handleCloseNavMenu}
-                  sx={{ mt: ".2em", color: 'white', display: 'block' }}
-                  component="a"
-                  href={href}
-                >
-                  {label}
-                </Button>
-            ))}
-          </Box>
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+            component="a"
+            href="/"
+          >
+            <AppLogo />
+            <Typography variant='h5' sx={{ fontFamily: 'monospace', marginBottom: '-5px', marginLeft: '.25em' }}>MIAUDOTE</Typography>
+          </IconButton>
+          
+          {/* Menu Mobile */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <IconButton size="large" onClick={handleOpenNavMenu} color="inherit">
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar-mobile"
+              anchorEl={anchorElNav}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{ display: { xs: 'block', md: 'none' } }}
+            >
+              {paginas.map(({ label, href, requireLogin }) => (
+                (requireLogin && !user) ? null :
+                  <MenuItem key={href} component="a" href={href} onClick={handleCloseNavMenu}>
+                    <Typography textAlign="center">{label}</Typography>
+                  </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+          
+          {/* Logo Mobile */}
+          <Typography variant='h6' component="a" href="/" sx={{ display: { xs: 'flex', md: 'none' }, flexGrow: 1, fontFamily: 'monospace', color: 'inherit', textDecoration: 'none' }}>
+            MIAUDOTE
+          </Typography>
 
+          {/* Menu Desktop */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            {paginas.map(({ label, href, requireLogin }) => (
+              (requireLogin && !user) ? null :
+                <Button key={href} sx={{ my: 2, color: 'white', display: 'block' }} component="a" href={href}>
+                  {label}
+                </Button>
+            ))}
+          </Box>
+          
+          {/* Ícones do Usuário (Notificações, Perfil) */}
           <Box sx={{ flexGrow: 0 }}>
             {user ? (
               <>
-                {/* 4. ATUALIZAÇÃO: Ícone de notificação agora é dinâmico */}
                 <Tooltip title="Notificações">
                   <IconButton onClick={handleOpenNotif} sx={{ mr: '.25em' }}>
                     <Badge badgeContent={notifications.length} color="error">
@@ -126,78 +138,50 @@ export default function NavBar({ user }) {
                 </Tooltip>
                 <Menu
                   sx={{ mt: '45px' }}
-                  id="menu-notif"
                   anchorEl={anchorElNotif}
-                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  keepMounted
                   open={Boolean(anchorElNotif)}
                   onClose={handleCloseNotif}
                 >
-                  {/* 5. ATUALIZAÇÃO: Menu agora mostra as notificações reais */}
                   <Stack spacing={0} divider={<Divider orientation="horizontal" flexItem />}>
                     {notifications.length > 0 ? (
                       notifications.map(notif => (
-                        <MenuItem 
-                          key={notif.id} 
-                          onClick={handleCloseNotif}
-                          component="a"
-                          href={`/proposal/${notif.id}`}
-                        >
-                          <Notification 
-                            userName={notif.proposerName} 
-                            petName={notif.petName} 
-                            timestamp={notif.createdAt?.toDate()} 
-                          />
+                        <MenuItem key={notif.id} onClick={handleCloseNotif} component="a" href={`/proposal/${notif.id}`}>
+                          <Notification userName={notif.proposerName} petName={notif.petName} timestamp={notif.createdAt?.toDate()} />
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled>
-                        <Typography sx={{ p: 2 }}>Nenhuma nova notificação.</Typography>
-                      </MenuItem>
+                      <MenuItem disabled><Typography sx={{ p: 2 }}>Nenhuma nova notificação.</Typography></MenuItem>
                     )}
                   </Stack>
                 </Menu>
 
-                {/* ... (Menu do Perfil do usuário - sem alterações) ... */}
                 <Tooltip title="Abrir configurações">
-                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar alt={user.displayName || ''}>
-                      {user.displayName ? user.displayName.charAt(0).toUpperCase() : ''}
-                    </Avatar>
-                  </IconButton>
-                </Tooltip>
-                <Menu
-                  sx={{ mt: '45px' }}
-                  id="menu-appbar"
-                  anchorEl={anchorElUser}
-                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  keepMounted
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  open={Boolean(anchorElUser)}
-                  onClose={handleCloseUserMenu}
-                >
-                  {configs.map(({ label, href, action }) => (
-                    // 3. O menu agora usa links ou a função de logout
-                    <MenuItem key={label} onClick={action === 'logout' ? handleLogout : handleCloseUserMenu}>
-                      <Typography
-                        textAlign="center"
-                        component="a"
-                        href={action !== 'logout' ? href : undefined}
-                        sx={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
-                      >
-                        {label}
-                      </Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
+                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                    <Avatar alt={user.displayName || ''}>
+                      {user.displayName ? user.displayName.charAt(0).toUpperCase() : ''}
+                    </Avatar>
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  sx={{ mt: '45px' }}
+                  anchorEl={anchorElUser}
+                  open={Boolean(anchorElUser)}
+                  onClose={handleCloseUserMenu}
+                >
+                  {configs.map(({ label, href, action }) => (
+                    <MenuItem key={label} onClick={action === 'logout' ? handleLogout : handleCloseUserMenu}>
+                      <Typography textAlign="center" component="a" href={action !== 'logout' ? href : undefined} sx={{ textDecoration: 'none', color: 'inherit', width: '100%' }}>
+                        {label}
+                      </Typography>
+                    </MenuItem>
+                  ))}
+                </Menu>
               </>
             ) : (
-              // ... (Botões de Login/Cadastro - sem alterações)
               <Stack direction="row" sx={{ display: { xs: 'none', md: 'inherit' } }}>
-                <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar<AppRegistrationIcon sx={{ ml: ".5em" }} /></Button>
-                <Button color="inherit" component="a" href='/login'>Login<LoginIcon sx={{ ml: ".5em" }} /></Button>
-              </Stack>
+                <Button color="inherit" component="a" href='/cadastro-usuario'>Cadastrar</Button>
+                <Button color="inherit" component="a" href='/login'>Login</Button>
+              </Stack>
             )}
           </Box>
         </Toolbar>

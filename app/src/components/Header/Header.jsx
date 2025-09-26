@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router';
-import { Box, AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemButton, ListItemText, IconButton, Divider } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu'; 
+import { 
+  Box, AppBar, Toolbar, Typography, Drawer, List, ListItem, 
+  ListItemButton, ListItemText, ListItemIcon, IconButton, Divider 
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+// 1. Ícones para os novos itens de menu
+import HomeIcon from '@mui/icons-material/Home';
+import SearchIcon from '@mui/icons-material/Search';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PetsIcon from '@mui/icons-material/Pets';
 
-export default function Header({ titulo }) {
+// 2. O Header agora recebe o 'user' para mostrar/esconder links
+export default function Header({ titulo, user }) {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const toggleDrawer = (open) => (event) => {
@@ -12,6 +22,59 @@ export default function Header({ titulo }) {
     }
     setDrawerOpen(open);
   };
+
+  // 3. Listas de links para organizar o menu
+  const publicPages = [
+    { text: 'Início', icon: <HomeIcon />, href: '/' },
+    { text: 'Buscar Pets', icon: <SearchIcon />, href: '/search-pets' },
+  ];
+
+  const privatePages = [
+    { text: 'Meu Perfil', icon: <AccountCircleIcon />, href: '/profile' },
+    { text: 'Meus Favoritos', icon: <FavoriteIcon />, href: '/my-favorites' },
+    { text: 'Meus Pets Cadastrados', icon: <ListAltIcon />, href: '/my-pets' },
+    { text: 'Cadastrar um Pet', icon: <PetsIcon />, href: '/register-pet' },
+  ];
+
+  const drawerList = (
+    <Box
+      sx={{ width: 250 }}
+      role="presentation"
+      onClick={toggleDrawer(false)}
+      onKeyDown={toggleDrawer(false)}
+    >
+      <Toolbar />
+      <Divider />
+      <List>
+        {/* Links públicos, sempre visíveis */}
+        {publicPages.map((page) => (
+          <ListItem key={page.text} disablePadding>
+            <ListItemButton component="a" href={page.href}>
+              <ListItemIcon>{page.icon}</ListItemIcon>
+              <ListItemText primary={page.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+      
+      {/* Links privados, visíveis apenas se o usuário estiver logado */}
+      {user && (
+        <>
+          <Divider />
+          <List>
+            {privatePages.map((page) => (
+              <ListItem key={page.text} disablePadding>
+                <ListItemButton component="a" href={page.href}>
+                  <ListItemIcon>{page.icon}</ListItemIcon>
+                  <ListItemText primary={page.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </>
+      )}
+    </Box>
+  );
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -33,44 +96,13 @@ export default function Header({ titulo }) {
         </Toolbar>
       </AppBar>
 
+      {/* 4. O conteúdo do Drawer agora é a lista dinâmica que criamos */}
       <Drawer
         anchor="left"
         open={isDrawerOpen}
         onClose={toggleDrawer(false)}
       >
-        <Box
-          sx={{ width: 250 }}
-          role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
-        >
-
-          <Toolbar />
-          <Divider />
-          <List>
-
-            <ListItem disablePadding>
-              <ListItemButton component={Link} to="/MIAUDOTE/">
-                <ListItemText primary="-- TESTE INÍCIO --" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component={Link} to="/MIAUDOTE/profile">
-                <ListItemText primary="-- TESTE PERFIL --" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component={Link} to="/MIAUDOTE/register-pet">
-                <ListItemText primary="-- TESTE CADASTRAR PET --" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component={Link} to="/MIAUDOTE/search-pets">
-                <ListItemText primary="-- TESTE BUSCAR PETS --" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        </Box>
+        {drawerList}
       </Drawer>
     </Box>
   );
