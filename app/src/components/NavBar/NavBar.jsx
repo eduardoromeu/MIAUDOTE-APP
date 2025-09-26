@@ -18,7 +18,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 const paginas = [
   { label: "Buscar Pets", href: "/search-pets", requireLogin: false },
   { label: "Adoções Concluídas", href: "/success-stories", requireLogin: false },
-  { label: "Meus Favoritos", href: "/my-favorites", requireLogin: true },
+  // { label: "Meus Favoritos", href: "/my-favorites", requireLogin: true },
   { label: "Meus Pets", href: "/my-pets", requireLogin: true },
   { label: "Cadastrar Pet", href: "/register-pet", requireLogin: true },
 ];
