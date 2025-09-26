@@ -1,54 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, CircularProgress, Button } from '@mui/material'; // Usando Grid do core, é mais comum
+import { Container, Grid, Typography, CircularProgress, Button } from '@mui/material';
 import PetCard from '../components/PetCard/PetCard';
 import SuccessStories from "../pages/SuccessStories";
+import { useOutletContext } from 'react-router';
+// import { useNavigate } from 'react-router-dom'; // 1. REMOVIDO
 
-// 1. IMPORTS DO FIREBASE PARA LER DADOS
-import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
-import { db } from '../firebase'; // Verifique se o caminho está correto
+// Importe as funções necessárias do Firebase
+import { 
+  collection, 
+  getDocs, 
+  query, 
+  orderBy, 
+  limit, 
+  where, 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  arrayUnion, 
+  arrayRemove 
+} from "firebase/firestore";
+import { db } from '../firebase';
 
 function Home() {
-  // 3. ESTADOS PARA GUARDAR OS PETS E CONTROLAR O CARREGAMENTO
+  const { user } = useOutletContext();
+  // const navigate = useNavigate(); // 2. REMOVIDO
+
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userFavorites, setUserFavorites] = useState([]);
 
-  // 4. useEffect PARA BUSCAR OS DADOS QUANDO A PÁGINA CARREGA
   useEffect(() => {
-    const fetchPets = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        // Cria uma consulta para buscar todos os documentos da coleção 'pets'
-        // e ordena pelos mais recentes primeiro.
-        const q = query(
+        const petsQuery = query(
           collection(db, "pets"),
           where("adopted", "==", false),
           orderBy("createdAt", "desc"),
           limit(3)
         );
-
-        // Executa a consulta
-        const querySnapshot = await getDocs(q);
-
-        // Mapeia os resultados, adicionando o ID do documento a cada objeto de pet
-        const petsList = querySnapshot.docs.map(doc => ({
+        const petsSnapshot = await getDocs(petsQuery);
+        const petsList = petsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-
         setPets(petsList);
 
+        if (user) {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            setUserFavorites(userDocSnap.data().favorites || []);
+          }
+        } else {
+          setUserFavorites([]);
+        }
+
       } catch (error) {
-        console.error("Erro ao buscar pets: ", error);
+        console.error("Erro ao buscar dados: ", error);
       } finally {
-        // Garante que o 'loading' termine, mesmo se der erro
         setLoading(false);
       }
     };
 
-    fetchPets();
-  }, []); // O array vazio [] garante que esta função rode apenas uma vez.
+    fetchData();
+  }, [user]);
 
-  // 5. RENDERIZAÇÃO CONDICIONAL
-  // Exibe um spinner de carregamento enquanto os dados são buscados
+  const handleToggleFavorite = async (petId) => {
+    if (!user) {
+      // 3. SUBSTITUÍDO: Redireciona usando a API padrão do navegador
+      window.location.href = '/login'; 
+      return;
+    }
+
+    const userDocRef = doc(db, "users", user.uid);
+    const isCurrentlyFavorite = userFavorites.includes(petId);
+    
+    try {
+      if (isCurrentlyFavorite) {
+        await updateDoc(userDocRef, {
+          favorites: arrayRemove(petId)
+        });
+        setUserFavorites(prevFavorites => prevFavorites.filter(id => id !== petId));
+      } else {
+        await updateDoc(userDocRef, {
+          favorites: arrayUnion(petId)
+        });
+        setUserFavorites(prevFavorites => [...prevFavorites, petId]);
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar favoritos: ", error);
+    }
+  };
+
   if (loading) {
     return (
       <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
@@ -59,22 +103,25 @@ function Home() {
 
   return (
     <Container sx={{ minHeight: "120vh" }}>
-
-      {/* Exibe a lista de pets ou uma mensagem se não houver nenhum */}
       {pets.length > 0 ? (
         <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
           <Typography variant="h4" component="h1" align='center' gutterBottom>
-            Útilmos pets cadastrados
+            Últimos pets cadastrados
           </Typography>
 
           <Grid container spacing={4} justifyContent="center">
             {pets.map(pet => (
               <Grid item key={pet.id} xs={12} sm={6} md={4}>
-                {/* 6. PASSA OS DADOS DE CADA PET PARA O PetCard */}
-                <PetCard petData={pet} key={pet.id} showOwner={true} />
+                <PetCard
+                  petData={pet}
+                  showOwner={true}
+                  isFavorite={userFavorites.includes(pet.id)}
+                  onFavoriteToggle={() => handleToggleFavorite(pet.id)}
+                />
               </Grid>
             ))}
           </Grid>
+          
           <Button 
             variant='contained' size='large' sx={{ mt: "1em", flex: 0, alignSelf: "center" }}
             component="a" href="/search-pets"
@@ -102,8 +149,7 @@ function Home() {
         </Container>
       )}
 
-      {/* TODO Fazer buscar pets com adopted = true na database */}
-      <Container sx={{ mt: '5em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <Container sx={{ mt: 'em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <SuccessStories cardsLimit={3} showMoreButton={true} />
       </Container>
     </Container>
