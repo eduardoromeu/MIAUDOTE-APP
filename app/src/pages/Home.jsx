@@ -1,23 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, CircularProgress, Button, Box } from '@mui/material';
+import { Container, Grid, Typography, CircularProgress, Button, Box, Paper } from '@mui/material';
+import Carousel from 'react-material-ui-carousel'; // 1. NOVO: Importa o componente Carousel
 import PetCard from '../components/PetCard/PetCard';
 import SuccessStories from "../pages/SuccessStories";
-// 1. REMOVIDO: Import do SideMenu não é mais necessário
-// import SideMenu from '../components/SideMenu/SideMenu.jsx'; 
 import { useOutletContext } from 'react-router';
 import { collection, getDocs, query, orderBy, limit, where, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { db } from '../firebase';
 
+// URL da imagem no Firebase Storage
+const BANNER_IMAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/miaudote-a9379.firebasestorage.app/o/Banner%2Fbanner_1.png?alt=media&token=437eab38-0a08-4323-a09c-d84fbb681193';
+
+// 2. NOVO: Componente funcional para renderizar o banner
+function Banner(props) {
+    return (
+        // O componente Paper adiciona um fundo e elevação (sombra) ao banner
+        <Paper 
+            sx={{ 
+                height: { xs: 150, sm: 250, md: 350 }, // Altura responsiva
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                backgroundColor: '#f5f5f5', // Cor de fundo suave
+                borderRadius: 2,
+                overflow: 'hidden',
+                mb: 4, // Margem inferior para separar do conteúdo abaixo
+            }}
+            elevation={4} // Elevação para destacar o banner
+        >
+            <Box 
+                component="img" 
+                src={props.item.url} 
+                alt={props.item.alt}
+                sx={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover', // Garante que a imagem cubra todo o Box
+                    borderRadius: 2,
+                }}
+            />
+        </Paper>
+    )
+}
+
 function Home() {
+    // ... (Seus estados e hooks)
   const { user } = useOutletContext();
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userFavorites, setUserFavorites] = useState([]);
 
-  // 2. REMOVIDO: Estados e funções que controlavam o SideMenu
-  // const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // const handleToggleMenu = () => { ... };
+    // 3. NOVO: Array de itens para o Carousel (pode adicionar mais banners aqui)
+    const bannerItems = [
+        {
+            url: BANNER_IMAGE_URL,
+            alt: "Banner de Adoção de Pets",
+            // Se houver um link de destino, adicione aqui
+            // link: "/adotar" 
+        },
+        // Adicione mais banners se houver mais imagens no futuro
+        // {
+        //     url: 'OUTRA_URL',
+        //     alt: "Outro Banner",
+        // },
+    ];
 
+
+    // ... (Seus useEffects e funções)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -89,51 +137,71 @@ function Home() {
     );
   }
 
-  // 3. ALTERADO: O layout de Grid foi substituído por um Container simples
   return (
-    <Container sx={{ minHeight: "120vh", py: 4 }}>
-        {pets.length > 0 ? (
-          <>
-            <Typography variant="h4" component="h1" align='center' gutterBottom>
-              Últimos pets cadastrados
-            </Typography>
+    <Container sx={{ minHeight: "120vh", py: 4 }}>
 
-            <Grid container spacing={4} justifyContent="center">
-              {pets.map(pet => (
-                <Grid item key={pet.id} xs={12} sm={6} md={4}>
-                  <PetCard
-                    petData={pet}
-                    showOwner={true}
-                    isFavorite={userFavorites.includes(pet.id)}
-                    onFavoriteToggle={() => handleToggleFavorite(pet.id)}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: "1em" }}>
-                <Button 
-                    variant='contained' 
-                    size='large'
-                    component="a" 
-                    href="/search-pets"
-                >
-                    Ver mais pets
-                </Button>
-            </Box>
-          </>
-        ) : (
-          <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Typography variant="h4" component="h1" align='center' gutterBottom>
-              Nenhum pet cadastrado no momento.
-            </Typography>
-          </Container>
-        )}
+        {/* 4. NOVO: Seção do Carousel/Banner */}
+        <Carousel
+            animation="slide" // Tipo de animação: "slide" ou "fade"
+            navButtonsAlwaysVisible={true} // Mostrar botões de navegação
+            indicatorContainerProps={{
+                style: {
+                    marginTop: '10px', // Espaçamento entre o banner e os indicadores
+                }
+            }}
+        >
+            {
+                bannerItems.map( (item, i) => <Banner key={i} item={item} /> )
+            }
+        </Carousel>
 
-        <Container sx={{ mt: '5em' }}>
-          <SuccessStories cardsLimit={3} showMoreButton={true} />
-        </Container>
-    </Container>
+        {/* --- Separador Visual (opcional) --- */}
+        <Box sx={{ mt: 5 }} /> 
+        
+        {/* Conteúdo de 'Últimos pets cadastrados' (existente) */}
+        {pets.length > 0 ? (
+          <>
+            <Typography variant="h4" component="h1" align='center' gutterBottom>
+              Últimos pets cadastrados
+            </Typography>
+
+            <Grid container spacing={4} justifyContent="center">
+              {pets.map(pet => (
+                <Grid item key={pet.id} xs={12} sm={6} md={4}>
+                  <PetCard
+                    petData={pet}
+                    showOwner={true}
+                    isFavorite={userFavorites.includes(pet.id)}
+                    onFavoriteToggle={() => handleToggleFavorite(pet.id)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: "1em" }}>
+                <Button 
+                    variant='contained' 
+                    size='large'
+                    component="a" 
+                    href="/search-pets"
+                >
+                    Ver mais pets
+                </Button>
+            </Box>
+          </>
+        ) : (
+          <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="h4" component="h1" align='center' gutterBottom>
+              Nenhum pet cadastrado no momento.
+            </Typography>
+          </Container>
+        )}
+
+        {/* Seção SuccessStories (existente) */}
+        <Container sx={{ mt: '5em' }}>
+          <SuccessStories cardsLimit={3} showMoreButton={true} />
+        </Container>
+    </Container>
   );
 }
 

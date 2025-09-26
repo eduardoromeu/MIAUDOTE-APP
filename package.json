@@ -19,6 +19,7 @@
     "isbot": "^5.1.27",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-material-ui-carousel": "^3.4.2",
     "react-router": "^7.7.1"
   },
   "devDependencies": {
