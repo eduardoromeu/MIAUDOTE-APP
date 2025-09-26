@@ -6,23 +6,22 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import PetCard from '../components/PetCard/PetCard';
 
-// 1. Import from 'react-router' WHICH YOUR PROJECT ALREADY USES
 import { useOutletContext } from 'react-router';
 import { signOut, updateProfile } from 'firebase/auth';
-import { auth, db } from '../firebase'; // Make sure this path is correct
-import { doc, getDoc, query, documentId, where, collection, getDocs } from "firebase/firestore";
+import { auth, db } from '../firebase';
+import { doc, getDoc, query, documentId, where, collection, getDocs, setDoc } from "firebase/firestore";
 
 export default function Profile() {
-  // 2. This now correctly gets the user from root.jsx
   const { user } = useOutletContext();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user ? user.displayName : '');
-  const [favorites, setFavorites] = useState({});
+  const [favorites, setFavorites] = useState(null); // Iniciar como null para o estado de loading
+  const [userDescription, setUserDescription] = useState('');
+  const [editedDescription, setEditedDescription] = useState('');
 
-  // Get user favorites
   useEffect(() => {
-    const checkFavorites = async () => {
+    const fetchUserData = async () => {
       if (!user) return;
 
       const userDocRef = doc(db, "users", user.uid);
@@ -31,47 +30,46 @@ export default function Profile() {
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
 
+        // Define a descrição do usuário vinda do Firestore
+        setUserDescription(userData.description || '');
+
+        // Lógica para buscar os pets favoritos
         if (userData.favorites && userData.favorites.length > 0) {
-          const favorites = userData.favorites;
+          
+          // ===================================================================
+          // ✨ CORREÇÃO APLICADA AQUI ✨
+          // Converte todos os IDs do array para string para evitar o erro do Firebase.
+          const favoritesIds = userData.favorites.map(id => String(id));
+          // ===================================================================
+
           const chunks = [];
-
-          // divide em grupos de até 10
-          for (let i = 0; i < favorites.length; i += 10) {
-            chunks.push(favorites.slice(i, i + 10));
+          // O Firestore só permite buscar até 10 itens por vez com o operador "in"
+          for (let i = 0; i < favoritesIds.length; i += 10) {
+            chunks.push(favoritesIds.slice(i, i + 10));
           }
-
-          // dispara as queries em paralelo
           const queries = chunks.map(chunk =>
-            getDocs(
-              query(
-                collection(db, "pets"),
-                where(documentId(), "in", chunk)
-              )
-            )
+            getDocs(query(collection(db, "pets"), where(documentId(), "in", chunk)))
           );
-
           const snapshots = await Promise.all(queries);
-
-          // junta todos os resultados em um único array
           const favPets = snapshots.flatMap(snap =>
             snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
           );
-
           setFavorites(favPets);
-          console.log(favPets);
         } else {
-          setFavorites([]);
+          setFavorites([]); // Define como array vazio se não houver favoritos
         }
+      } else {
+        // Caso o documento do usuário ainda não exista no Firestore
+        setFavorites([]);
+        setUserDescription('');
       }
     };
 
-    checkFavorites();
-  }, [user, db]);
+    fetchUserData();
+  }, [user]);
 
-
-
-  // Display a loading indicator if the user data hasn't arrived yet
-  if (!user) {
+  // Exibe o loading enquanto o usuário ou os favoritos não foram carregados
+  if (!user || favorites === null) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
         <CircularProgress />
@@ -81,6 +79,7 @@ export default function Profile() {
 
   const handleEdit = () => {
     setEditedName(user.displayName || '');
+    setEditedDescription(userDescription);
     setIsEditing(true);
   };
 
@@ -91,19 +90,28 @@ export default function Profile() {
   const handleSave = async () => {
     if (!editedName.trim()) return;
     try {
-      await updateProfile(auth.currentUser, {
-        displayName: editedName,
-      });
+      const userDocRef = doc(db, "users", user.uid);
+
+      // Executa as duas atualizações em paralelo
+      await Promise.all([
+        updateProfile(auth.currentUser, {
+          displayName: editedName,
+        }),
+        setDoc(userDocRef, { description: editedDescription }, { merge: true })
+      ]);
+
+      // Atualiza o estado local para refletir a mudança instantaneamente
+      setUserDescription(editedDescription);
       setIsEditing(false);
+
     } catch (error) {
-      console.error("Error updating profile: ", error);
+      console.error("Erro ao atualizar o perfil: ", error);
     }
   };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // 3. Use standard browser navigation for redirection
       window.location.href = '/';
     } catch (error) {
       console.error("Error signing out: ", error);
@@ -112,21 +120,34 @@ export default function Profile() {
 
   return (
     <Container>
-      <Stack direction="column" alignItems="center" spacing={2} sx={{ mb: 4, width: 'fit-content', mx: 'auto' }}>
-        <Avatar sx={{ width: 100, height: 100, p: 1.5, bgcolor: 'orange', fontSize: '3rem' }}>
+      <Stack direction="column" alignItems="center" spacing={2} sx={{ my: 4, width: 'fit-content', mx: 'auto' }}>
+        <Avatar sx={{ width: 100, height: 100, p: 1.5, bgcolor: 'primary.main', fontSize: '3rem' }}>
           {user.displayName ? user.displayName.charAt(0).toUpperCase() : ''}
         </Avatar>
 
         {isEditing ? (
-          <Stack spacing={2} component="form" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+          // MODO DE EDIÇÃO
+          <Stack spacing={2} component="form" onSubmit={(e) => { e.preventDefault(); handleSave(); }} alignItems="center" sx={{width: '100%', maxWidth: '400px'}}>
             <TextField
               label="Nome"
               value={editedName}
               onChange={(e) => setEditedName(e.target.value)}
               variant="outlined"
               size="small"
+              fullWidth
             />
-            <Typography variant="body1">{user.email}</Typography>
+            <TextField
+              label="Descrição"
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              variant="outlined"
+              size="small"
+              multiline
+              rows={3}
+              fullWidth
+              placeholder="Fale um pouco sobre você..."
+            />
+            <Typography variant="body1" color="text.secondary">{user.email}</Typography>
             <Box>
               <Button startIcon={<SaveIcon />} variant="contained" type="submit" sx={{ mr: 1 }}>
                 Salvar
@@ -137,9 +158,13 @@ export default function Profile() {
             </Box>
           </Stack>
         ) : (
+          // MODO DE VISUALIZAÇÃO
           <Stack alignItems="center" spacing={1}>
             <Typography variant="h4">{user.displayName}</Typography>
-            <Typography variant="body1">{user.email}</Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
+              {userDescription || 'Adicione uma descrição para o seu perfil.'}
+            </Typography>
+            <Typography variant="body2">{user.email}</Typography>
             <Button startIcon={<EditIcon />} variant="outlined" sx={{ mt: 1 }} onClick={handleEdit}>
               Editar Perfil
             </Button>
@@ -150,34 +175,27 @@ export default function Profile() {
         </Button>
       </Stack>
 
-      {/* Your favorite pets section can remain here */}
-      {(!favorites) ? (
-        <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-          <CircularProgress />
-        </Container>
-      ) : (
-        <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-          {/* Exibe a lista de pets ou uma mensagem se não houver nenhum */}
-          {favorites.length > 0 ? (
-            <Container>
-              <Typography variant="h4" sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
-                Pets Favoritos
-              </Typography>
-              <Grid container spacing={4} justifyContent="center">
-                {favorites.map(pet => (
-                  <PetCard petData={pet} key={pet.id} />
-                ))}
-              </Grid>
-            </Container>
-          ) : (
-            <Typography variant="h5" sx={{ textAlign: 'center', mt: 5 }}>
-              Nenhum pet favorito. <br /> Adicione clicando no ícone <FavoriteBorderIcon />
-            </Typography>
-          )}
-        </Container>
-      )
-      }
+      <hr />
 
+      {/* Seção de Pets Favoritos */}
+      <Container sx={{ py: 4 }}>
+        <Typography variant="h4" sx={{ mb: 4, textAlign: 'center' }}>
+          Pets Favoritos
+        </Typography>
+        {favorites.length > 0 ? (
+          <Grid container spacing={4} justifyContent="center">
+            {favorites.map(pet => (
+              <Grid item key={pet.id} xs={12} sm={6} md={4}>
+                <PetCard petData={pet} />
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="h6" color="text.secondary" sx={{ textAlign: 'center', mt: 5 }}>
+            Você ainda não favoritou nenhum pet. <br /> Clique no ícone <FavoriteBorderIcon sx={{ verticalAlign: 'middle' }} /> nos cards para adicionar.
+          </Typography>
+        )}
+      </Container>
     </Container>
   );
 }
