@@ -15,20 +15,18 @@ import { auth, db } from '../../firebase';
 import Notification from '../Notification';
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
-// 1. MUDANÇA AQUI: Adicionados os novos links à lista de páginas principais
 const paginas = [
   { label: "Buscar Pets", href: "/search-pets", requireLogin: false },
   { label: "Adoções Concluídas", href: "/success-stories", requireLogin: false },
-  { label: "Meus Favoritos", href: "/my-favorites", requireLogin: true }, // NOVO
-  { label: "Meus Pets", href: "/my-pets", requireLogin: true },       // NOVO
+  { label: "Meus Favoritos", href: "/my-favorites", requireLogin: true },
+  { label: "Meus Pets", href: "/my-pets", requireLogin: true },
   { label: "Cadastrar Pet", href: "/register-pet", requireLogin: true },
 ];
 
-// 2. MUDANÇA AQUI: Removidos os links duplicados do menu de configurações
 const configs = [
   { label: "Perfil", href: "/profile" },
-  // { label: "Meus Favoritos", href: "/my-favorites" }, // REMOVIDO
-  // { label: "Meus Pets", href: "/my-pets" },       // REMOVIDO
+  { label: "Meus Favoritos", href: "/my-favorites" },
+  { label: "Meus Pets", href: "/my-pets" },
   { label: "Sair", action: "logout" },
 ];
 
@@ -55,6 +53,7 @@ export default function NavBar({ user }) {
     }
   }, [user]);
 
+  // O resto do código (handlers, etc.) permanece o mesmo...
   const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
@@ -72,11 +71,12 @@ export default function NavBar({ user }) {
     }
   };
 
+
   return (
     <AppBar position="fixed">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          {/* Logo */}
+          {/* ... (Logo e Menus - sem alterações) ... */}
           <IconButton
             edge="start"
             color="inherit"
@@ -89,7 +89,6 @@ export default function NavBar({ user }) {
             <Typography variant='h5' sx={{ fontFamily: 'monospace', marginBottom: '-5px', marginLeft: '.25em' }}>MIAUDOTE</Typography>
           </IconButton>
           
-          {/* Menu Mobile */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton size="large" onClick={handleOpenNavMenu} color="inherit">
               <MenuIcon />
@@ -110,12 +109,10 @@ export default function NavBar({ user }) {
             </Menu>
           </Box>
           
-          {/* Logo Mobile */}
           <Typography variant='h6' component="a" href="/" sx={{ display: { xs: 'flex', md: 'none' }, flexGrow: 1, fontFamily: 'monospace', color: 'inherit', textDecoration: 'none' }}>
             MIAUDOTE
           </Typography>
 
-          {/* Menu Desktop */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {paginas.map(({ label, href, requireLogin }) => (
               (requireLogin && !user) ? null :
@@ -125,10 +122,10 @@ export default function NavBar({ user }) {
             ))}
           </Box>
           
-          {/* Ícones do Usuário (Notificações, Perfil) */}
           <Box sx={{ flexGrow: 0 }}>
             {user ? (
               <>
+                {/* ... (Menu de notificações - sem alterações) ... */}
                 <Tooltip title="Notificações">
                   <IconButton onClick={handleOpenNotif} sx={{ mr: '.25em' }}>
                     <Badge badgeContent={notifications.length} color="error">
@@ -157,7 +154,12 @@ export default function NavBar({ user }) {
 
                 <Tooltip title="Abrir configurações">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar alt={user.displayName || ''}>
+                    {/* 👇 MUDANÇA PRINCIPAL AQUI 👇 */}
+                    <Avatar 
+                      alt={user.displayName || ''} 
+                      src={user.photoURL} // Usa a URL da foto do usuário
+                    >
+                      {/* O Avatar mostra a letra inicial se não houver foto */}
                       {user.displayName ? user.displayName.charAt(0).toUpperCase() : ''}
                     </Avatar>
                   </IconButton>

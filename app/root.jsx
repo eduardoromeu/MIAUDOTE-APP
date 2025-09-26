@@ -10,6 +10,9 @@ import {
 
 import "./app.css";
 
+// 1. IMPORTAÇÃO DO FOOTER
+import Footer from "./src/components/Footer/Footer"; // 👈 Ajuste o caminho conforme a localização do seu arquivo Footer.jsx
+
 export const links = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -36,16 +39,16 @@ export function Layout({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Layout: useEffect foi ativado."); // <-- PONTO DE VERIFICAÇÃO 1
+    console.log("Layout: useEffect foi ativado.");
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      console.log("Firebase: onAuthStateChanged retornou.", currentUser); // <-- PONTO DE VERIFICAÇÃO 2
+      console.log("Firebase: onAuthStateChanged retornou.", currentUser);
       setUser(currentUser);
       setLoading(false);
     });
 
     return () => {
-      console.log("Layout: Limpando o useEffect."); // <-- PONTO DE VERIFICAÇÃO 3
+      console.log("Layout: Limpando o useEffect.");
       unsubscribe();
     }
   }, []);
@@ -82,29 +85,53 @@ export function Layout({ children }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      {/* 2. ESTRUTURA PARA STICKY FOOTER */}
+      <Box
+          component="body"
+          sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '100vh', // Garante que a altura mínima seja a da viewport
+              margin: 0, // Remove margens padrão do body
+              padding: 0, // Remove padding padrão do body
+          }}
+      >
+        <CssBaseline />
+
         <NavBar
           user={user}
           isOpenModal={isOpenModal}
           setOpenModal={setOpenModal}
         />
-        <CssBaseline />
-        <Box component="main" sx={{ p: 3, mt: 8 }}>
+        
+        {/* Conteúdo Principal: flexGrow: 1 garante que ele ocupe o espaço restante */}
+        <Box 
+          component="main" 
+          sx={{ 
+            flexGrow: 1, 
+            p: 3, 
+            mt: 8,
+            width: '100%', // Para garantir a largura total
+          }}
+        >
           <Outlet context={{ user }} />
         </Box>
+        
+        {/* 3. ADIÇÃO DO FOOTER */}
+        <Footer />
+        
         <ScrollRestoration />
         <Scripts />
-      </body>
+      </Box>
     </html>
   );
 }
 
-// A função 'App' não precisa ser envolvida por um 'Document' aqui
+// A função 'App' e 'ErrorBoundary' permanecem sem alteração
 export default function App() {
   return <Outlet />;
 }
 
-// Sua ErrorBoundary continua a mesma
 export function ErrorBoundary({ error }) {
   // ... seu código de ErrorBoundary ...
   let message = "Oops!";
@@ -137,7 +164,3 @@ export function ErrorBoundary({ error }) {
     </Container>
   );
 }
-
-// A declaração DOCTYPE deve estar no nível superior do arquivo para ser renderizada primeiro.
-// Como estamos em JSX, a forma de fazer isso é ter um componente 'Document' que retorna a estrutura HTML completa.
-// A função Layout agora faz esse papel.
