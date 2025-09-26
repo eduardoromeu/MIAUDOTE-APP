@@ -3,99 +3,150 @@ import { useParams } from 'react-router';
 import {
   Container, Typography, Card, CardMedia, CardContent, Button,
   Box, IconButton, Divider, List, ListItem, ListItemIcon,
-  ListItemText, CardActions, CircularProgress
+  ListItemText, CardActions, CircularProgress, Alert
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import PetsIcon from '@mui/icons-material/Pets';
 import CakeIcon from '@mui/icons-material/Cake';
 import PersonIcon from '@mui/icons-material/Person';
-
 import { useOutletContext } from 'react-router';
-// Import the necessary Firestore functions
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
-import { db } from '../firebase'; // Ensure this path is correct
+
+// 1. IMPORTS ADICIONAIS DO FIRESTORE
+import { 
+  doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, 
+  addDoc, serverTimestamp, query, where, getDocs 
+} from "firebase/firestore";
+import { db } from '../firebase';
 
 function PetDetails() {
-  const { petId } = useParams(); // Gets the pet's ID from the URL
+  const { petId } = useParams();
   const { user } = useOutletContext();
-
-  // 1. State for pet data, loading status, and favorites
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
   const [loadingFavorite, setLoadingFavorite] = useState(true);
 
-  // 2. useEffect to fetch the pet data from Firestore
+  // 2. NOVOS ESTADOS PARA CONTROLAR A PROPOSTA
+  const [proposalLoading, setProposalLoading] = useState(false);
+  const [proposalStatus, setProposalStatus] = useState(null); // 'pending', 'none', etc.
+
+  // useEffect para buscar os dados do pet (sem alterações)
   useEffect(() => {
     const fetchPet = async () => {
+      setLoading(true);
       try {
-        // Create a reference to the specific pet document in the 'pets' collection
         const petDocRef = doc(db, "pets", petId);
         const petDocSnap = await getDoc(petDocRef);
-
         if (petDocSnap.exists()) {
-          // If the pet is found, save its data to the state
           setPet({ id: petDocSnap.id, ...petDocSnap.data() });
         } else {
-          // If no document is found, pet remains null
-          console.log("No such pet found in the database!");
+          console.log("Pet não encontrado!");
         }
       } catch (error) {
-        console.error("Error fetching pet details:", error);
+        console.error("Erro ao buscar detalhes do pet:", error);
       } finally {
-        setLoading(false); // Stop the main loading indicator
+        setLoading(false);
       }
     };
-
     fetchPet();
-  }, [petId]); // This effect runs whenever the petId in the URL changes
+  }, [petId]);
 
-  // useEffect for checking favorite status (almost the same, but with a fix)
+  // useEffect para verificar status de favorito e proposta
   useEffect(() => {
-    const checkFavoriteStatus = async () => {
-      if (!user || !pet) { // Also wait until pet data is loaded
+    const checkStatus = async () => {
+      if (!user || !pet) {
         setLoadingFavorite(false);
         return;
       }
+      
+      // Checa status de favorito
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
-        // FIX: Firestore IDs are strings, so we don't need Number()
         if (userData.favorites && userData.favorites.includes(pet.id)) {
           setIsFavorited(true);
         }
       }
       setLoadingFavorite(false);
-    };
-    checkFavoriteStatus();
-  }, [user, pet]); // Now depends on 'user' and 'pet' objects
 
+      // 3. NOVA LÓGICA: Checa se já existe uma proposta pendente
+      const q = query(
+        collection(db, "proposals"),
+        where("petId", "==", pet.id),
+        where("proposerId", "==", user.uid),
+        where("status", "==", "pending")
+      );
+      const existingProposals = await getDocs(q);
+      if (!existingProposals.empty) {
+        setProposalStatus('pending'); // Já existe uma proposta pendente
+      } else {
+        setProposalStatus('none'); // Nenhuma proposta pendente
+      }
+    };
+    checkStatus();
+  }, [user, pet]);
+
+  // handleFavorite (sem alterações)
   const handleFavorite = async () => {
     if (!user) {
-      alert("Você precisa estar logado para favoritar um pet!");
-      window.location.href = '/login';
-      return;
+        alert("Você precisa estar logado para favoritar um pet!");
+        window.location.href = '/login';
+        return;
     }
     const userDocRef = doc(db, "users", user.uid);
     if (isFavorited) {
-      // FIX: Use the pet's string ID
-      await updateDoc(userDocRef, { favorites: arrayRemove(pet.id) });
-      setIsFavorited(false);
+        await updateDoc(userDocRef, { favorites: arrayRemove(pet.id) });
+        setIsFavorited(false);
     } else {
-      // FIX: Use the pet's string ID
-      await updateDoc(userDocRef, { favorites: arrayUnion(pet.id) });
-      setIsFavorited(true);
+        await updateDoc(userDocRef, { favorites: arrayUnion(pet.id) });
+        setIsFavorited(true);
     }
   };
 
-  // Display a loading spinner while fetching data
+  // 4. NOVA FUNÇÃO: Para criar a proposta de adoção
+  const handleProposeAdoption = async () => {
+    // Verificações de segurança
+    if (!user) {
+      alert("Você precisa estar logado para propor uma adoção.");
+      window.location.href = '/login';
+      return;
+    }
+    if (user.uid === pet.ownerId) {
+      alert("Você não pode adotar seu próprio pet.");
+      return;
+    }
+    if (proposalStatus === 'pending') {
+      alert("Você já enviou uma proposta para este pet.");
+      return;
+    }
+
+    setProposalLoading(true);
+    try {
+      await addDoc(collection(db, "proposals"), {
+        petId: pet.id,
+        petName: pet.name,
+        ownerId: pet.ownerId,
+        proposerId: user.uid,
+        proposerName: user.displayName,
+        proposerEmail: user.email,
+        status: "pending",
+        createdAt: serverTimestamp(),
+      });
+      setProposalStatus('pending'); // Atualiza o status na tela
+      alert("Proposta de adoção enviada com sucesso!");
+    } catch (error) {
+      console.error("Erro ao enviar proposta: ", error);
+      alert("Ocorreu um erro ao enviar sua proposta.");
+    }
+    setProposalLoading(false);
+  };
+
+  // ... (Telas de loading e pet não encontrado - sem alterações)
   if (loading) {
     return <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Container>;
   }
-
-  // Display the "not found" message if the pet object is still null after loading
   if (!pet) {
     return <Container><Typography variant="h4" color="error">Pet não encontrado!</Typography></Container>;
   }
@@ -105,6 +156,7 @@ function PetDetails() {
       <Card>
         <CardMedia component="img" height="400" image={pet.imageUrl} alt={pet.name} />
         <CardContent>
+          {/* ... (Conteúdo do card - sem alterações) ... */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography gutterBottom variant="h3" component="div">{pet.name}</Typography>
             <IconButton onClick={handleFavorite} color="error" disabled={loadingFavorite}>
@@ -116,20 +168,28 @@ function PetDetails() {
           <Typography variant="h5" component="h2" gutterBottom>Sobre o Pet</Typography>
           <List>
             <ListItem><ListItemIcon><CakeIcon /></ListItemIcon><ListItemText primary="Idade" secondary={pet.age} /></ListItem>
-            {/* You can add more fields from your database here */}
             <ListItem><ListItemIcon><PetsIcon /></ListItemIcon><ListItemText primary="Raça" secondary={pet.breed} /></ListItem>
-            {(!pet.adopted) ? (
-              <ListItem><ListItemIcon><PersonIcon /></ListItemIcon><ListItemText primary="Nome do tutor" secondary={pet.ownerName} /></ListItem>
-            ) : (
-              <ListItem><ListItemIcon><PersonIcon /></ListItemIcon><ListItemText primary="Adotado por" secondary={pet.ownerName} /></ListItem>
-            )}
+            <ListItem><ListItemIcon><PersonIcon /></ListItemIcon><ListItemText primary="Tutor(a)" secondary={pet.ownerName} /></ListItem>
           </List>
         </CardContent>
-        {(!pet.adopted) ? (
+        
+        {/* 5. ATUALIZAÇÃO: Lógica do botão de adoção */}
+        {user && !pet.adopted && user.uid !== pet.ownerId && (
           <CardActions sx={{ p: 2, justifyContent: 'center' }}>
-            <Button variant="contained" color="success" size="large">Quero Adotar!</Button>
+            {proposalStatus === 'pending' ? (
+              <Button variant="contained" disabled>
+                Proposta Enviada
+              </Button>
+            ) : (
+              <Button variant="contained" color="success" size="large" onClick={handleProposeAdoption} disabled={proposalLoading}>
+                {proposalLoading ? <CircularProgress size={24} color="inherit" /> : 'Quero Adotar!'}
+              </Button>
+            )}
           </CardActions>
-        ) : (<></>)}
+        )}
+        {pet.adopted && (
+            <Alert severity="success" sx={{ justifyContent: 'center', m: 2}}>Este pet já encontrou um lar!</Alert>
+        )}
       </Card>
     </Container>
   );

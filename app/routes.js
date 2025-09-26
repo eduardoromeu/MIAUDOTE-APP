@@ -3,7 +3,6 @@ import { index, route } from "@react-router/dev/routes";
 
 export default [
   // --- ROTAS PÚBLICAS ---
-  // Acessíveis mesmo sem login
   index("./src/pages/Home.jsx"),
   route("/login", "./src/pages/Login.jsx"),
   route("/cadastro-usuario", "./src/pages/Cadastro.jsx"),
@@ -13,16 +12,17 @@ export default [
   route("/logout", "./src/pages/LogOut.jsx"),
 
   // --- ROTAS PROTEGIDAS ---
-  // Cria um grupo de rotas que usarão o "segurança"
   route(null, "./src/components/ProtectedRoute.jsx", [
-    // Todas as rotas aqui dentro exigirão login
     route("/register-pet", "./src/pages/RegisterPet.jsx"),
-    route("/proposal:proposalIndex", "./src/pages/AdoptionProposal.jsx"),
+    
+    // ATENÇÃO: Havia um erro na sua rota de proposal antiga, corrigi abaixo
+    // route("/proposal:proposalIndex", "./src/pages/AdoptionProposal.jsx"), // Forma antiga incorreta
    
     route("/profile", "./src/pages/Profile.jsx"), 
-
-    // 👇 ADICIONE AS DUAS NOVAS ROTAS AQUI 👇
     route("/my-favorites", "./src/pages/MyFavorites.jsx"),
     route("/my-pets", "./src/pages/MyPets.jsx"),
+    
+    // 👇 ADICIONE A ROTA PARA A PÁGINA DE PROPOSTA AQUI 👇
+    route("/proposal/:proposalId", "./src/pages/AdoptionProposal.jsx"),
   ]),
 ];
