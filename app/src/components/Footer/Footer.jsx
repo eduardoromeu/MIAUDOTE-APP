@@ -67,7 +67,7 @@ function Footer() {
               align="center"
               sx={{ opacity: 0.8 }}
             >
-              &copy; {new Date().getFullYear()} Miauddote. Todos os direitos reservados.
+              &copy; {new Date().getFullYear()} Miaudote. Todos os direitos reservados.
             </Typography>
           </Grid>
           

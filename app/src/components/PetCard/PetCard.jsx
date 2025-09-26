@@ -20,15 +20,14 @@ export default function PetCard({ petData, showOwner = false, isFavorite, onFavo
 
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      
-      <Box sx={{ position: 'relative', width: '100%', paddingTop: '100%' }}>
+      <Box sx={{ position: 'relative', width: '100%', paddingTop: '0%', height: '150px' }}>
         <CardMedia
           component="img"
           image={petData.imageUrl}
           alt={petData.name}
           sx={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-            objectFit: 'cover', backgroundColor: '#b3e5fc',
+            objectFit: 'cover', backgroundColor: '#b3e5fc', maxHeight: '150px'
           }}
           onError={(ev) => { ev.target.src = PetHouseIcon; }}
         />
